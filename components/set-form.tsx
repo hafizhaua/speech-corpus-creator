@@ -92,8 +92,6 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
           .split("\n")
           .map((sentence, index) => {
             const trimmedSentence = sentence.trim();
-
-            // Use a ternary operator to conditionally return the object or null
             return trimmedSentence !== ""
               ? {
                   id: index + 1,
@@ -125,6 +123,7 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
   }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -210,7 +209,7 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
               </Button>
 
               <FormControl>
-                <Input type="text" {...field} className="hidden" />
+                <Input type="text" className="hidden" {...field} />
               </FormControl>
               <FormMessage />
               <DataTable columns={columns} data={tableData || []} />
