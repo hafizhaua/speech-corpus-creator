@@ -23,6 +23,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Lightbulb, Upload } from "lucide-react";
@@ -32,8 +41,8 @@ import { Switch } from "@/components/ui/switch";
 import { readFileAsync } from "@/lib/utils";
 
 const formSchema = z.object({
-  title: z.string().min(2).max(20),
-  description: z.string().min(2).max(50),
+  title: z.string(),
+  description: z.string(),
   language: z.string(),
   utterances: z.string(),
   is_public: z.boolean(),
@@ -187,10 +196,42 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
                 <AlertDescription className="text-muted-foreground">
                   You can input the utterances manually or by using a .txt file
                   consisting utterances separated by newline. See the{" "}
-                  <span className="text-primary">example</span>.
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <span className="text-primary">example</span>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[500px]">
+                      <DialogHeader>
+                        <DialogTitle>Utterance text file</DialogTitle>
+                        <DialogDescription>
+                          Each utterance is divided by the new line; hence below
+                          example will be rendered as 10 individual utterances.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="">
+                        <span className="rounded-md text-xs px-4 py-2 bg-muted text-right text-muted-foreground mb-4">
+                          example.txt
+                        </span>
+                        <div className="bg-muted w-full rounded-md rounded-tl-none py-6 px-6 text-sm">
+                          <code>
+                            The city lights shimmered in the distance. <br />{" "}
+                            Urban life is fast-paced and dynamic. <br />
+                            Skyscrapers defined the city skyline. <br />
+                            People hurried along the bustling streets. <br />
+                            Street vendors added color to the cityscape. <br />
+                            Parks provided an oasis in the heart of the city.{" "}
+                            <br />
+                            Public transportation connected every corner. <br />
+                            The city never sleeps; it's alive 24/7. <br />
+                            Cultural diversity thrived in every neighborhood.
+                          </code>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  .
                 </AlertDescription>
               </Alert>
-              {/* <Input type="file" accept=".txt" onChange={handleFileChange} /> */}
               <Button type="button" variant="outline" className="w-full p-0">
                 <label
                   htmlFor="txt"
