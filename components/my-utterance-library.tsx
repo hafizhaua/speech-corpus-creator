@@ -62,7 +62,7 @@ export const MyUtteranceLibrary = () => {
         <Link href={"/utterance/create"} className="w-full">
           <Button className="w-full">Create New Set</Button>
         </Link>
-        <Link href={"/utterance/library"} className="w-full">
+        <Link href={"/library"} className="w-full">
           <Button className="w-full" variant={"secondary"}>
             Browse Library
           </Button>

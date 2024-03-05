@@ -106,7 +106,7 @@ export default function DetailSet() {
           </Pagination>
         </div>
       </div>
-      <Alert>
+      {/* <Alert>
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle className="font-semibold">Tips!</AlertTitle>
         <AlertDescription className="text-muted-foreground">
@@ -114,8 +114,8 @@ export default function DetailSet() {
           consisting utterances separated by newline. See the{" "}
           <span className="text-primary">example</span>.
         </AlertDescription>
-      </Alert>
-      <Button className="w-full">Add to my library</Button>
+      </Alert> */}
+      <Button className="w-full">Add to my collection</Button>
     </div>
   );
 }

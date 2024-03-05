@@ -9,7 +9,7 @@ import {
 
 export const SetCard = () => {
   return (
-    <Link href={"/utterance"}>
+    <Link href={"/library/1"}>
       <Card className="flex flex-col w-full h-full overflow-x-hidden hover:bg-muted transition">
         <CardHeader>
           <CardTitle className="">
