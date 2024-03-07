@@ -10,7 +10,7 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-8">
+    <div className="h-screen flex flex-col items-center justify-center gap-8">
       <div className="text-center">
         <h1 className="font-bold tracking-tighter text-4xl mb-2">
           Speech Corpus Creator

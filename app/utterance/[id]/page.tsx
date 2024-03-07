@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 
 export default function DetailSet() {
   return (
-    <div className="p-12 flex flex-col gap-8">
+    <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-8">
       <div className="">
         <h1 className="text-2xl font-bold mb-2">Percakapan Kota Urban</h1>
         <p className="text-muted-foreground">

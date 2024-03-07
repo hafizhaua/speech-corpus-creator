@@ -7,13 +7,11 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function DetailSet() {
   return (
-    <div className="p-12 flex flex-col gap-8">
+    <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-8">
       <div className="">
         <h1 className="text-2xl font-bold mb-2">
           Percakapan Kota Urban{" "}

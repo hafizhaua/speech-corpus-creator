@@ -128,6 +128,14 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
     }
   };
 
+  const handleAddRow = () => {
+    const newRow = {
+      id: tableData.length + 1,
+      text: "",
+    };
+    setTableData([...tableData, newRow]);
+  };
+
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
@@ -202,10 +210,12 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[500px]">
                       <DialogHeader>
-                        <DialogTitle>Utterance text file</DialogTitle>
+                        <DialogTitle className="mb-1">
+                          Utterance text file
+                        </DialogTitle>
                         <DialogDescription>
-                          Each utterance is divided by the new line; hence below
-                          example will be rendered as 10 individual utterances.
+                          Each utterance is divided by the new line; i.e. below
+                          file will be rendered as 10 individual utterances.
                         </DialogDescription>
                       </DialogHeader>
                       <div className="">
@@ -253,6 +263,7 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
                 <Input type="text" className="hidden" {...field} />
               </FormControl>
               <FormMessage />
+              <Button onClick={handleAddRow}>Add row</Button>
               <DataTable columns={columns} data={tableData || []} />
             </FormItem>
           )}

@@ -1,21 +1,5 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { Button } from "@/components/ui/button";
-import { ChevronDownIcon } from "lucide-react";
-
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SetCard } from "./components/set-card";
 import {
@@ -30,7 +14,7 @@ import {
 
 export default function UtteranceLibrary() {
   return (
-    <div className="p-12 flex flex-col gap-8 h-screen">
+    <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-8 h-screen">
       <div className="">
         <h1 className="text-2xl font-bold mb-2">Utterance Library</h1>
         <p className="text-muted-foreground">

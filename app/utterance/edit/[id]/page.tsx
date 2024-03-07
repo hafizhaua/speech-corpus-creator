@@ -11,7 +11,7 @@ export default function EditSet() {
     is_public: true,
   };
   return (
-    <div className="p-12 space-y-4">
+    <div className="p-8 py-12 md:px-10 md:py-12 space-y-4">
       <h1 className="text-2xl font-bold">Create Utterance Set</h1>
       <SetForm initialValue={data} />
     </div>
