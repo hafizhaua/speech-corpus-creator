@@ -11,8 +11,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createClient } from "@/lib/supabase/server";
 
-export default function UtteranceLibrary() {
+async function getUtterance() {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("utterance_sets")
+    .select("title, languages (name)");
+
+  if (!error) return data;
+
+  return [];
+}
+
+async function getLanguages() {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.from("languages").select("id, name");
+
+  if (!error) return data;
+
+  return [];
+}
+
+export default async function UtteranceLibrary() {
+  const data = await getUtterance();
+  const languages = await getLanguages();
+
+  console.log(data);
   return (
     <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-8 h-screen">
       <div className="">
@@ -33,13 +60,20 @@ export default function UtteranceLibrary() {
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="ar">Arabic</SelectItem>
+              {languages.map((language) => {
+                return (
+                  <SelectItem key={language.id} value={language.name}>
+                    {language.name}
+                  </SelectItem>
+                );
+              })}
+              {/* <SelectItem value="ar">Arabic</SelectItem>
               <SelectItem value="uk">English (UK)</SelectItem>
               <SelectItem value="us">English (US)</SelectItem>
               <SelectItem value="fr">French</SelectItem>
               <SelectItem value="de">German</SelectItem>
               <SelectItem value="hi">Hindi</SelectItem>
-              <SelectItem value="id">Indonesian</SelectItem>
+              <SelectItem value="id">Indonesian</SelectItem> */}
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -76,20 +110,15 @@ export default function UtteranceLibrary() {
       </div>
       <ScrollArea className="h-full">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 flex-1">
-          <SetCard />
-          <SetCard />
-          <SetCard />
-          <SetCard />
-          <SetCard />
-          <SetCard />
-          <SetCard />
-          <SetCard />
-          <SetCard />
-          <SetCard />
-          <SetCard />
-          <SetCard />
-          <SetCard />
-          <SetCard />
+          {data.map((d) => {
+            return (
+              <SetCard
+                key={d.title}
+                title={d.title}
+                language={d.languages?.name}
+              />
+            );
+          })}
         </div>
       </ScrollArea>
     </div>

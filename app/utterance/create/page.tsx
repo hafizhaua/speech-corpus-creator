@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 
 export default async function CreateSet() {
   const supabase = createClient();
-  const { data, error } = await supabase.auth.getUser();
+  const { data: userData, error } = await supabase.auth.getUser();
 
-  if (error || !data?.user) {
+  if (error || !userData?.user) {
     redirect("/login");
   }
 

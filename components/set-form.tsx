@@ -39,20 +39,22 @@ import { Utterance, columns } from "../app/utterance/create/columns";
 import { DataTable } from "./data-table";
 import { Switch } from "@/components/ui/switch";
 import { readFileAsync } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   title: z.string(),
   description: z.string(),
-  language: z.string(),
+  language_id: z.string(),
   utterances: z.string(),
-  is_public: z.boolean(),
+  is_visible: z.boolean(),
 });
 
 interface SetFormProps {
   initialValue?: {
     title: string;
     description: string;
-    language: string;
+    language_id: string;
     // utterances: UtterancesType[];
     utterances: string;
     is_public: boolean;
@@ -64,17 +66,24 @@ type UtterancesType = {
   text: string;
 };
 
+type LanguagesType = {
+  id: string | number;
+  name: string;
+};
+
 const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
   const [tableData, setTableData] = useState<UtterancesType[]>([]);
+  const [languages, setLanguages] = useState<LanguagesType[]>([]);
+  const router = useRouter();
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: initialValue?.title || "",
       description: initialValue?.description || "",
-      language: initialValue?.language || "",
+      language_id: initialValue?.language_id || undefined,
       utterances: initialValue?.utterances || "",
-      is_public: initialValue?.is_public || false,
+      is_visible: initialValue?.is_public || false,
     },
   });
 
@@ -90,6 +99,19 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
       setTableData(parsedData);
     }
   }, [initialValue]);
+
+  useEffect(() => {
+    const getLangs = async () => {
+      const supabase = createClient();
+      const { data: langData, error } = await supabase
+        .from("languages")
+        .select("id, name");
+
+      if (!error) setLanguages(langData);
+    };
+
+    getLangs();
+  }, []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -137,8 +159,16 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
   };
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+    const supabase = createClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    const { data, error } = await supabase
+      .from("utterance_sets")
+      .insert({ user_id: userData.user?.id, ...values });
+
+    if (!error) router.refresh();
   }
 
   return (
@@ -172,20 +202,33 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
         />
         <FormField
           control={form.control}
-          name="language"
+          name="language_id"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Language</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value?.toString()}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="What language is used in this set?" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="INA">Indonesian</SelectItem>
+                  {languages.map((language) => {
+                    return (
+                      <SelectItem
+                        key={language.id}
+                        value={language.id.toString()}
+                      >
+                        {language.name}
+                      </SelectItem>
+                    );
+                  })}
+                  {/* <SelectItem value={field}>Indonesian</SelectItem>
                   <SelectItem value="IND">Indian</SelectItem>
-                  <SelectItem value="ENG">English</SelectItem>
+                  <SelectItem value="ENG">English</SelectItem> */}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -263,14 +306,14 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
                 <Input type="text" className="hidden" {...field} />
               </FormControl>
               <FormMessage />
-              <Button onClick={handleAddRow}>Add row</Button>
+              {/* <Button onClick={handleAddRow}>Add row</Button> */}
               <DataTable columns={columns} data={tableData || []} />
             </FormItem>
           )}
         />
         <FormField
           control={form.control}
-          name="is_public"
+          name="is_visible"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">

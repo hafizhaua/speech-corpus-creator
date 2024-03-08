@@ -12,39 +12,29 @@ import { Button } from "./ui/button";
 import { MyUtteranceList } from "./my-utterance-list";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { set } from "react-hook-form";
 
 interface SetProps {
+  id: number;
   title: string;
-  langcode: string;
-  lang: string;
-  href?: string;
+  languages: {
+    name: string;
+    code_alpha2: string;
+  };
 }
 
 export const MyUtteranceLibrary = async () => {
   const supabase = createClient();
 
-  const setData: SetProps[] = [
-    {
-      title: "Percakapan Kota Urban",
-      langcode: "ID",
-      lang: "Indonesia",
-    },
-    {
-      title: "Telecom Service Calls",
-      langcode: "US",
-      lang: "English (US)",
-    },
-    {
-      title: "Esprits Expressifs",
-      langcode: "FR",
-      lang: "French",
-    },
-    {
-      title: "Gespräche in der Medizin",
-      langcode: "DE",
-      lang: "German",
-    },
-  ];
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  const { data: setData, error } = await supabase
+    .from("utterance_sets")
+    .select("id, title, languages ( name, code_alpha2 )")
+    .eq("user_id", sessionData.session?.user.id)
+    .returns<SetProps[]>();
+
   return (
     <Card className="flex flex-col w-full h-full overflow-x-hidden">
       <CardHeader>
@@ -56,18 +46,18 @@ export const MyUtteranceLibrary = async () => {
       </CardHeader>
       <ScrollArea className="h-full">
         <CardContent className="flex flex-col flex-1 gap-3">
-          {setData.length > 0 &&
-            setData.map((d) => {
+          {!error && setData?.length > 0 ? (
+            setData?.map((d) => {
               return (
                 <MyUtteranceList
-                  key={d.title}
+                  key={d.id}
                   title={d.title}
-                  langCode={d.langcode}
-                  lang={d.lang}
+                  langCode={d.languages.code_alpha2}
+                  lang={d.languages.name}
                 />
               );
-            })}
-          {setData.length === 0 && (
+            })
+          ) : (
             <div className="grid place-items-center text-center text-muted-foreground mt-16 space-y-4">
               <div className="px-4 py-4 bg-muted rounded-full">
                 <PackageSearch className="w-20 h-20" />

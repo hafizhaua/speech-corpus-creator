@@ -7,15 +7,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export const SetCard = () => {
+interface SetCardProps {
+  title: string;
+  language: string;
+}
+
+export const SetCard: React.FC<SetCardProps> = ({ title, language }) => {
   return (
     <Link href={"/library/1"}>
       <Card className="flex flex-col w-full h-full overflow-x-hidden hover:bg-muted transition">
         <CardHeader>
           <CardTitle className="">
-            <p className="text-lg font-bold">Percakapan Kota Urban</p>
+            <p className="text-lg font-bold">{title}</p>
           </CardTitle>
-          <CardDescription>Indonesian</CardDescription>
+          <CardDescription>{language}</CardDescription>
         </CardHeader>
 
         <CardFooter className="text-muted-foreground">
