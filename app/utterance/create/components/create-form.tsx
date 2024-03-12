@@ -1,7 +1,5 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -27,7 +25,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -35,12 +32,8 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Lightbulb, Upload } from "lucide-react";
-import { Utterance, columns } from "../app/utterance/create/columns";
-import { DataTable } from "./data-table";
+
 import { Switch } from "@/components/ui/switch";
-import { readFileAsync } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   title: z.string(),
@@ -50,127 +43,22 @@ const formSchema = z.object({
   is_visible: z.boolean(),
 });
 
-interface SetFormProps {
-  initialValue?: {
-    title: string;
-    description: string;
-    language_id: string;
-    utterances: string;
-    is_visible: boolean;
-  };
-}
-
-type UtterancesType = {
-  id: string | number;
-  text: string;
-};
-
-type LanguagesType = {
-  id: string | number;
+type Languages = {
+  id: number;
   name: string;
 };
 
-const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
-  const [tableData, setTableData] = useState<UtterancesType[]>([]);
-  const [languages, setLanguages] = useState<LanguagesType[]>([]);
-  const router = useRouter();
-  // 1. Define your form.
+interface CreateFormProps {
+  languages: Languages[];
+}
+
+export const CreateForm: React.FC<CreateFormProps> = ({ languages }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: initialValue?.title || "",
-      description: initialValue?.description || "",
-      language_id: initialValue?.language_id || 0,
-      utterances: initialValue?.utterances || "",
-      is_visible: initialValue?.is_visible || false,
-    },
   });
 
-  useEffect(() => {
-    if (initialValue && initialValue.utterances) {
-      const utterancesArray = initialValue.utterances.split("|");
-
-      const parsedData = utterancesArray.map((text, index) => ({
-        id: index + 1,
-        text: text.trim(), // Trim to remove any leading or trailing spaces
-      }));
-
-      setTableData(parsedData);
-    }
-  }, [initialValue]);
-
-  useEffect(() => {
-    const getLangs = async () => {
-      const supabase = createClient();
-      const { data: langData, error } = await supabase
-        .from("languages")
-        .select("id, name");
-
-      if (!error) setLanguages(langData);
-    };
-
-    getLangs();
-  }, []);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-
-    if (file) {
-      try {
-        const content = await readFileAsync(file);
-        const sentencesArray = content
-          .split("\n")
-          .map((sentence, index) => {
-            const trimmedSentence = sentence.trim();
-            return trimmedSentence !== ""
-              ? {
-                  id: index + 1,
-                  text: trimmedSentence,
-                }
-              : null;
-          })
-          .filter((sentence) => sentence !== null) as {
-          id: number;
-          text: string;
-        }[];
-
-        form.setValue(
-          "utterances",
-          sentencesArray
-            .map((sentence) => {
-              return sentence?.text;
-            })
-            .join("|")
-        );
-        setTableData(sentencesArray);
-      } catch (error) {
-        console.error("Error reading the file:", error);
-      }
-    }
-  };
-
-  const handleAddRow = () => {
-    const newRow = {
-      id: tableData.length + 1,
-      text: "",
-    };
-    setTableData([...tableData, newRow]);
-  };
-
-  // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
-    const supabase = createClient();
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-
-    const { data, error } = await supabase
-      .from("utterance_sets")
-      .insert({ user_id: userData.user?.id, ...values });
-
-    if (!error) {
-      router.refresh();
-      router.push("/");
-    }
   }
 
   return (
@@ -228,9 +116,6 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
                       </SelectItem>
                     );
                   })}
-                  {/* <SelectItem value={field}>Indonesian</SelectItem>
-                  <SelectItem value="IND">Indian</SelectItem>
-                  <SelectItem value="ENG">English</SelectItem> */}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -295,13 +180,7 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
                   <Upload className="w-4 h-4" />
                   Upload .txt file
                 </label>
-                <input
-                  id="txt"
-                  type="file"
-                  accept=".txt"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
+                <input id="txt" type="file" accept=".txt" className="hidden" />
               </Button>
 
               <FormControl>
@@ -309,7 +188,6 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
               </FormControl>
               <FormMessage />
               {/* <Button onClick={handleAddRow}>Add row</Button> */}
-              <DataTable columns={columns} data={tableData || []} />
             </FormItem>
           )}
         />
@@ -342,5 +220,3 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
     </Form>
   );
 };
-
-export default SetForm;

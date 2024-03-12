@@ -1,6 +1,7 @@
-import SetForm from "@/components/set-form";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getLanguages } from "@/lib/actions/languages";
+import { CreateForm } from "./components/create-form";
 
 export default async function CreateSet() {
   const supabase = createClient();
@@ -10,10 +11,14 @@ export default async function CreateSet() {
     redirect("/login");
   }
 
+  const languages = await getLanguages();
+
+  console.log(languages);
+
   return (
     <div className="p-8 py-12 md:px-10 md:py-12 space-y-4">
       <h1 className="text-2xl font-bold">Create Utterance Set</h1>
-      <SetForm />
+      <CreateForm languages={languages} />
     </div>
   );
 }

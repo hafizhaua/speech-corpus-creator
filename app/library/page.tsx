@@ -18,7 +18,8 @@ async function getUtterance() {
 
   const { data, error } = await supabase
     .from("utterance_sets")
-    .select("title, languages (name)");
+    .select("title, languages (name)")
+    .eq("is_visible", true);
 
   if (!error) return data;
 

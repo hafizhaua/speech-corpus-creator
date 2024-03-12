@@ -24,6 +24,8 @@ export default async function LoginPage() {
       </div>
 
       <form className="flex flex-col gap-4">
+        <Label htmlFor="username">Username:</Label>
+        <Input id="username" name="username" type="text" />
         <Label htmlFor="email">Email:</Label>
         <Input id="email" name="email" type="email" required />
         <Label htmlFor="password">Password:</Label>

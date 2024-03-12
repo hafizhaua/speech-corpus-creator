@@ -10,6 +10,7 @@ import ReactCountryFlag from "react-country-flag";
 import Link from "next/link";
 
 interface UtteranceListProps {
+  id: number;
   title: string;
   langCode: string;
   lang: string;
@@ -17,6 +18,7 @@ interface UtteranceListProps {
 }
 
 export const MyUtteranceList: React.FC<UtteranceListProps> = ({
+  id,
   title,
   lang,
   langCode,
@@ -44,7 +46,7 @@ export const MyUtteranceList: React.FC<UtteranceListProps> = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <Link href={"/utterance/edit/1"}>
+          <Link href={"/utterance/edit/" + id}>
             <DropdownMenuItem>Edit</DropdownMenuItem>
           </Link>
           <Link href={"/utterance/delete/1"}>

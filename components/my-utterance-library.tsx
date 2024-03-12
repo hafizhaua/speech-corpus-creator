@@ -50,6 +50,7 @@ export const MyUtteranceLibrary = async () => {
             setData?.map((d) => {
               return (
                 <MyUtteranceList
+                  id={d.id}
                   key={d.id}
                   title={d.title}
                   langCode={d.languages.code_alpha2}
