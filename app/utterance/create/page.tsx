@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getLanguages } from "@/lib/actions/languages";
-import { CreateForm } from "./components/create-form";
+import { CreateForm } from "./create-form";
 
 export default async function CreateSet() {
   const supabase = createClient();
@@ -12,8 +12,6 @@ export default async function CreateSet() {
   }
 
   const languages = await getLanguages();
-
-  console.log(languages);
 
   return (
     <div className="p-8 py-12 md:px-10 md:py-12 space-y-4">

@@ -26,13 +26,13 @@ export const MyUtteranceList: React.FC<UtteranceListProps> = ({
 }) => {
   return (
     <div className="flex justify-between items-center gap-2">
-      <Link href={"/utterance/1"} className="group">
+      <Link href={`/utterance/${id}`} className="group">
         <div className="truncate">
           <h2 className="truncate font-semibold text-primary/90 mb-1 group-hover:text-primary transition">
             {title}
           </h2>
           <div className="flex items-center gap-2">
-            <ReactCountryFlag countryCode={langCode} svg />
+            <ReactCountryFlag countryCode={langCode} />
             <span className="truncate text-primary/50 group-hover:text-primary/75 transition text-sm">
               {lang}
             </span>

@@ -34,32 +34,108 @@ import { Input } from "@/components/ui/input";
 import { Lightbulb, Upload } from "lucide-react";
 
 import { Switch } from "@/components/ui/switch";
+import { readFileAsync } from "@/lib/utils";
+import { useState } from "react";
+import { DataTable } from "@/components/data-table";
+import { columns } from "./columns";
+import { createUtteranceSet } from "./actions";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
-  title: z.string(),
-  description: z.string(),
+  title: z.string().trim().min(1).max(30),
+  description: z.string().trim().min(1).max(100),
   language_id: z.string(),
   utterances: z.string(),
   is_visible: z.boolean(),
 });
 
-type Languages = {
-  id: number;
+type LanguagesType = {
+  id: string;
   name: string;
 };
 
+type UtterancesType = {
+  id: string | number;
+  text: string;
+};
+
 interface CreateFormProps {
-  languages: Languages[];
+  languages: LanguagesType[];
 }
 
 export const CreateForm: React.FC<CreateFormProps> = ({ languages }) => {
+  const [tableData, setTableData] = useState<UtterancesType[]>([]);
+  // const [languages, setLanguages] = useState<LanguagesType[]>([]);
+
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      // language_id: "",
+      utterances: "",
+      is_visible: false,
+    },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    const response = await createUtteranceSet(values);
+    console.log(response);
+
+    form.reset();
+    setTableData([]);
+
+    if (response?.error) {
+      console.log(response?.error);
+      toast.error(response?.error?.message);
+    } else {
+      toast.success("The set has been created successfully");
+      router.refresh();
+      setTimeout(() => {
+        router.push("/");
+      }, 500);
+    }
   }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (file) {
+      try {
+        const content = await readFileAsync(file);
+        const sentencesArray = content
+          .split("\n")
+          .map((sentence, index) => {
+            const trimmedSentence = sentence.trim();
+            return trimmedSentence !== ""
+              ? {
+                  id: index + 1,
+                  text: trimmedSentence,
+                }
+              : null;
+          })
+          .filter((sentence) => sentence !== null) as {
+          id: number;
+          text: string;
+        }[];
+
+        form.setValue(
+          "utterances",
+          sentencesArray
+            .map((sentence) => {
+              return sentence?.text;
+            })
+            .join("|")
+        );
+        setTableData(sentencesArray);
+      } catch (error) {
+        console.error("Error reading the file:", error);
+      }
+    }
+  };
 
   return (
     <Form {...form}>
@@ -180,13 +256,20 @@ export const CreateForm: React.FC<CreateFormProps> = ({ languages }) => {
                   <Upload className="w-4 h-4" />
                   Upload .txt file
                 </label>
-                <input id="txt" type="file" accept=".txt" className="hidden" />
+                <input
+                  id="txt"
+                  type="file"
+                  accept=".txt"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
               </Button>
 
               <FormControl>
                 <Input type="text" className="hidden" {...field} />
               </FormControl>
               <FormMessage />
+              <DataTable columns={columns} data={tableData || []} />
               {/* <Button onClick={handleAddRow}>Add row</Button> */}
             </FormItem>
           )}

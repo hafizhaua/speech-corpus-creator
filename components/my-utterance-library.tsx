@@ -13,13 +13,14 @@ import { MyUtteranceList } from "./my-utterance-list";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { set } from "react-hook-form";
+import { optional } from "zod";
 
 interface SetProps {
   id: number;
   title: string;
   languages: {
     name: string;
-    code_alpha2: string;
+    alpha2: string;
   };
 }
 
@@ -31,8 +32,9 @@ export const MyUtteranceLibrary = async () => {
 
   const { data: setData, error } = await supabase
     .from("utterance_sets")
-    .select("id, title, languages ( name, code_alpha2 )")
+    .select("id, title, languages ( name, alpha2 )")
     .eq("user_id", sessionData.session?.user.id)
+    .order("updated_at")
     .returns<SetProps[]>();
 
   return (
@@ -53,7 +55,7 @@ export const MyUtteranceLibrary = async () => {
                   id={d.id}
                   key={d.id}
                   title={d.title}
-                  langCode={d.languages.code_alpha2}
+                  langCode={d.languages.alpha2}
                   lang={d.languages.name}
                 />
               );
