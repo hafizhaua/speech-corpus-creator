@@ -28,10 +28,8 @@ const getUtteranceSet = async (id: string) => {
 
   const { data: userData, error: userError } = await supabase.auth.getUser();
 
-  console.log(userData, data?.user_id);
-
-  if (!error && !userError)
-    return { is_owned: userData?.user.id === data?.user_id, ...data };
+  if (!error)
+    return { is_owned: userData?.user?.id === data?.user_id, ...data };
 
   return null;
 };
