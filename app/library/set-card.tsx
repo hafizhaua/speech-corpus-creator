@@ -8,13 +8,20 @@ import {
 } from "@/components/ui/card";
 
 interface SetCardProps {
+  id: string;
   title: string;
   language: string;
+  author?: string;
 }
 
-export const SetCard: React.FC<SetCardProps> = ({ title, language }) => {
+export const SetCard: React.FC<SetCardProps> = ({
+  id,
+  title,
+  language,
+  author,
+}) => {
   return (
-    <Link href={"/library/1"}>
+    <Link href={"/library/" + id}>
       <Card className="flex flex-col w-full h-full overflow-x-hidden hover:bg-muted transition">
         <CardHeader>
           <CardTitle className="">
@@ -23,11 +30,13 @@ export const SetCard: React.FC<SetCardProps> = ({ title, language }) => {
           <CardDescription>{language}</CardDescription>
         </CardHeader>
 
-        <CardFooter className="text-muted-foreground">
-          <p className="">
-            by <span className="font-semibold">Hafizha Ulinnuha Ahmad</span>
-          </p>
-        </CardFooter>
+        {author && (
+          <CardFooter className="text-muted-foreground">
+            <p className="">
+              by <span className="font-semibold">{author}</span>
+            </p>
+          </CardFooter>
+        )}
       </Card>
     </Link>
   );
