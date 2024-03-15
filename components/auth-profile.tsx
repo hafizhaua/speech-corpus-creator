@@ -9,8 +9,18 @@ export const AuthProfile = async () => {
 
   const { data, error } = await supabase.auth.getUser();
 
-  const extractUsername = (email: string) =>
-    (email.match(/^([^@]+)@/) || [])[1];
+  const userName = data?.user?.user_metadata.name || data?.user?.email;
+  const avatarUrl = data?.user?.user_metadata.avatar_url;
+
+  const getInitial = (name: string) => {
+    // Splitting the name into individual parts
+    let nameParts = name.split(" ");
+
+    // Extracting the first character of each part and joining them
+    let initials = nameParts.map((part) => part[0].toUpperCase()).join("");
+
+    return initials;
+  };
 
   return (
     <>
@@ -19,11 +29,11 @@ export const AuthProfile = async () => {
           <div className="flex items-center justify-between ">
             <div className="flex gap-3 items-center">
               <Avatar className="w-8 h-8">
-                <AvatarImage src="/images/hua.png" />
-                <AvatarFallback>HUA</AvatarFallback>
+                <AvatarImage src={avatarUrl} />
+                <AvatarFallback>{`${getInitial(userName)}`}</AvatarFallback>
               </Avatar>
-              <p className="truncate font-semibold">
-                {extractUsername(data?.user.email || "")}
+              <p className="truncate">
+                <span className="font-semibold">{userName}</span>
               </p>
             </div>
             <LogOutButton />
