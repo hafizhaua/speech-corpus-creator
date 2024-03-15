@@ -14,7 +14,12 @@ type FormType = {
 export const createUtteranceSet = async (body: FormType) => {
   const supabase = createClient();
 
-  const response = await supabase.from("utterance_sets").insert(body);
+  const { data: userData } = await supabase.auth.getUser();
+
+  const response = await supabase
+    .from("utterance_sets")
+    .insert({ created_by: userData?.user?.user_metadata.name, ...body })
+    .select();
   revalidatePath("/");
   return response;
 };

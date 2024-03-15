@@ -13,12 +13,12 @@ type FormType = {
 
 export const updateUtteranceSet = async (body: FormType, id: string) => {
   const supabase = createClient();
-  console.log(body, id);
 
   const response = await supabase
     .from("utterance_sets")
     .update(body)
-    .eq("id", id);
+    .eq("id", id)
+    .select();
 
   revalidatePath("/");
   return response;

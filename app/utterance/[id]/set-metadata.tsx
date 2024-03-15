@@ -17,8 +17,7 @@ export default function SetMetadata({
 
   // Function to calculate number of sentences
   const calculateSentenceCount = (text: string) => {
-    return text.split(/[.|!|?]+/).filter((sentence) => sentence.trim() !== "")
-      .length;
+    return text.split("|").length;
   };
 
   // Calculate word count and number of sentences

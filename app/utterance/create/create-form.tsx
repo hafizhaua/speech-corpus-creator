@@ -93,10 +93,11 @@ export const CreateForm: React.FC<CreateFormProps> = ({ languages }) => {
       toast.error(response?.error?.message);
     } else {
       toast.success("The set has been created successfully");
-      router.refresh();
-      setTimeout(() => {
+      if (response?.data[0].id) {
+        router.push("/utterance/" + response?.data[0].id);
+      } else {
         router.push("/");
-      }, 500);
+      }
     }
   }
 

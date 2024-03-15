@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { UtteranceList } from "./utterance-list";
 import SetMetadata from "./set-metadata";
+import { notFound, redirect } from "next/navigation";
 
 interface SetType {
   title: string;
@@ -13,6 +14,7 @@ interface SetType {
   };
   utterances: string;
   is_visible: boolean;
+  user_id: string;
 }
 
 const getUtteranceSet = async (id: string) => {
@@ -20,12 +22,16 @@ const getUtteranceSet = async (id: string) => {
 
   const { data, error } = await supabase
     .from("utterance_sets")
-    .select("id, title, description, languages (name), utterances")
+    .select("id, title, description, languages (name), utterances, user_id")
     .eq("id", id)
-    .returns<SetType>()
+    // .returns<SetType>()
     .single();
 
-  if (!error) return data;
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  console.log(userData, data?.user_id);
+
+  if (!error && !userError && userData?.user.id === data?.user_id) return data;
 
   return null;
 };
@@ -36,6 +42,9 @@ export default async function DetailSet({
   params: { id: string };
 }) {
   const data = await getUtteranceSet(id);
+
+  if (!data) notFound();
+
   return (
     <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-8">
       <Header title={data?.title} description={data?.description} />

@@ -101,7 +101,11 @@ export const EditForm: React.FC<CreateFormProps> = ({
       toast.error(response?.error?.message);
     } else {
       toast.success("The set has been created successfully");
-      router.push("/");
+      if (response?.data[0].id) {
+        router.push("/utterance/" + response?.data[0].id);
+      } else {
+        router.push("/");
+      }
     }
   }
 
