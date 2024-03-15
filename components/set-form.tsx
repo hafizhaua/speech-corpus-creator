@@ -159,7 +159,6 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     const supabase = createClient();
     const { data: userData, error: userError } = await supabase.auth.getUser();
 
