@@ -43,7 +43,6 @@ export const MyUtteranceList: React.FC<UtteranceListProps> = ({
 }) => {
   const router = useRouter();
   const handleDelete = async (id: string) => {
-    console.log("Deleting ", id);
     const supabase = createClient();
 
     const { error } = await supabase
@@ -94,13 +93,13 @@ export const MyUtteranceList: React.FC<UtteranceListProps> = ({
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
+              utterance set and remove your data from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={() => handleDelete(id)}>
-              Continue
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

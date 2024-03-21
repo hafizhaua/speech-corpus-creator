@@ -16,6 +16,7 @@ import { Toaster } from "@/components/ui/sonner";
 export const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap",
 });
 export const metadata: Metadata = {
   title: "Speech Corpus Creator",

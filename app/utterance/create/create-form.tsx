@@ -83,7 +83,6 @@ export const CreateForm: React.FC<CreateFormProps> = ({ languages }) => {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const response = await createUtteranceSet(values);
-    console.log(response);
 
     form.reset();
     setTableData([]);

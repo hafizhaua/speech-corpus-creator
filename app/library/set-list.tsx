@@ -65,7 +65,6 @@ export const SetList: React.FC<SetListProps> = ({ languages }) => {
   };
 
   useEffect(() => {
-    console.log(debouncedSearch, selectedLanguage);
     fetchData();
   }, [debouncedSearch, selectedLanguage]);
 
