@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { UtteranceList } from "./utterance-list";
 import SetMetadata from "./set-metadata";
 import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
 
 interface SetType {
   title: string;
@@ -60,7 +61,9 @@ export default async function DetailSet({
           natural and engaging performance.
         </AlertDescription>
       </Alert>
-      <Button className="w-full">Start recording</Button>
+      <Link href={`/recording/${id}`}>
+        <Button className="w-full">Start recording</Button>
+      </Link>
     </div>
   );
 }
