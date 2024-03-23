@@ -101,25 +101,25 @@ export default function RecordingSession({
     <>
       <div className="text-muted-foreground space-y-1">
         <div className="flex gap-2 justify-center items-center">
-          <Button variant="ghost" size="icon" onClick={handlePrev}>
+          {/* <Button variant="ghost" size="icon" onClick={handlePrev}>
             <ChevronLeft />
-          </Button>
+          </Button> */}
           <span>
             {currIdx + 1} of {utterances?.length}
           </span>
-          <Button variant="ghost" size="icon" onClick={handleNext}>
+          {/* <Button variant="ghost" size="icon" onClick={handleNext}>
             <ChevronRight />
-          </Button>
+          </Button> */}
         </div>
         <p className="text-center text-sm text-muted-foreground">
           Click the record button and verbalize below sentence.
         </p>
       </div>
-      <div className="space-y-12 mb-16 flex flex-col items-center gap-3">
+      <div className="space-y-8 mb-16 flex flex-col items-center gap-3">
         <p className="text-3xl font-bold text-balance text-center h-24 md:h-16">
           {utterances[currIdx]}
         </p>
-        <div className="text-center space-y-3">
+        <div className="text-center space-y-4">
           <button
             className="group"
             onClick={handleChange}
@@ -152,8 +152,10 @@ export default function RecordingSession({
         {mediaRecorder && (
           <LiveAudioVisualizer
             mediaRecorder={mediaRecorder}
-            width={500}
-            height={75}
+            width={280}
+            height={150}
+            barWidth={40}
+            barColor="#7f1d1d"
           />
         )}
       </div>

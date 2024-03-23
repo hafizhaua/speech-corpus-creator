@@ -32,15 +32,19 @@ export default async function RecordingPage({
 }: {
   params: { id: string };
 }) {
-  const data = await getUtterances(id);
+  // const data = await getUtterances(id);
 
-  console.log(data);
+  // if (!data) notFound();
 
-  if (!data) notFound();
+  const dummy = [
+    "今度の休暇にはどこに行きますか？",
+    "京都で有名な観光スポットは何ですか？",
+    "ホテルの予約方法を教えてください。",
+  ];
 
   return (
-    <div className="p-8 md:px-10 md:py-32 min-h-screen flex flex-col gap-12 items-center">
-      <RecordingSession utterances={data} />
+    <div className="px-12 py-32 min-h-screen flex flex-col gap-12 items-center">
+      <RecordingSession utterances={dummy} />
     </div>
   );
 }

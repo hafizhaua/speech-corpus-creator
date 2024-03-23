@@ -6,6 +6,8 @@ import { UtteranceList } from "./utterance-list";
 import SetMetadata from "./set-metadata";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
+import UtteranceSkeleton from "./loading";
 
 interface SetType {
   title: string;
@@ -35,7 +37,7 @@ const getUtteranceSet = async (id: string) => {
   return null;
 };
 
-export default async function DetailSet({
+export default async function Utterance({
   params: { id },
 }: {
   params: { id: string };
@@ -45,26 +47,28 @@ export default async function DetailSet({
   if (!data) notFound();
 
   return (
-    <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-8">
-      <Header title={data?.title} description={data?.description} />
-      <SetMetadata
-        language={data?.languages.name}
-        utterances={data?.utterances}
-      />
-      <UtteranceList utterancesString={data?.utterances || ""} />
-      <Alert>
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle className="font-semibold">Attention!</AlertTitle>
-        <AlertDescription className="text-muted-foreground">
-          Ensure your recordings are authentic and diverse, with clear
-          enunciations, varying lengths, and minimal background noise for a
-          natural and engaging performance.
-        </AlertDescription>
-      </Alert>
-      <Link href={`/recording/${id}`}>
-        <Button className="w-full">Start recording</Button>
-      </Link>
-    </div>
+    <Suspense fallback={<UtteranceSkeleton />}>
+      <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-8">
+        <Header title={data?.title} description={data?.description} />
+        <SetMetadata
+          language={data?.languages.name}
+          utterances={data?.utterances}
+        />
+        <UtteranceList utterancesString={data?.utterances || ""} />
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle className="font-semibold">Attention!</AlertTitle>
+          <AlertDescription className="text-muted-foreground">
+            Ensure your recordings are authentic and diverse, with clear
+            enunciations, varying lengths, and minimal background noise for a
+            natural and engaging performance.
+          </AlertDescription>
+        </Alert>
+        <Link href={`/recording/${id}`}>
+          <Button className="w-full">Start recording</Button>
+        </Link>
+      </div>
+    </Suspense>
   );
 }
 
@@ -80,5 +84,11 @@ const Header = ({
       <h1 className="text-2xl font-bold mb-2">{title}</h1>
       <p className="text-muted-foreground">{description}</p>
     </div>
+  );
+};
+
+const OverviewSkeleton = () => {
+  return (
+    <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-8"></div>
   );
 };
