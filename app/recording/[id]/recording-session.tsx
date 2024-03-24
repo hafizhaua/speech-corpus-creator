@@ -1,21 +1,26 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAudioRecorder } from "react-audio-voice-recorder";
 import { LiveAudioVisualizer } from "react-audio-visualize";
-// const LiveAudioVisualizer = React.lazy(async () => {
-//   const { LiveAudioVisualizer } = await import("react-audio-visualize");
-//   return { default: LiveAudioVisualizer };
-// });
+import { useWavesurfer } from "@wavesurfer/react";
 
 export default function RecordingSession({
   utterances,
 }: {
   utterances: string[];
 }) {
+  const wavesurferRef = useRef<HTMLDivElement>(null);
+
   const [currIdx, setCurrIdx] = useState(0);
+
+  const { wavesurfer, isReady, isPlaying, currentTime } = useWavesurfer({
+    container: wavesurferRef,
+    waveColor: "purple",
+    height: 100,
+  });
 
   const handleNext = () => {
     setCurrIdx((prev) => (prev < utterances.length - 1 ? prev + 1 : prev));
@@ -89,8 +94,14 @@ export default function RecordingSession({
     a.remove();
   };
 
+  const onPlayPause = () => {
+    wavesurfer && wavesurfer.playPause();
+  };
+
   useEffect(() => {
     if (!recordingBlob) return;
+
+    wavesurfer?.loadBlob(recordingBlob);
 
     // downloadBlob(recordingBlob);
 
@@ -120,6 +131,34 @@ export default function RecordingSession({
           {utterances[currIdx]}
         </p>
         <div className="text-center space-y-4">
+          <div
+          // className={`${
+          //   isRecording ? "opacity-50 h-32" : "opacity-0 h-0"
+          // } transition-all overflow-hidden delay-500 duration-1000`}
+          >
+            {mediaRecorder ? (
+              <LiveAudioVisualizer
+                mediaRecorder={mediaRecorder}
+                width={280}
+                height={150}
+                barWidth={40}
+                barColor="#7f1d1d"
+              />
+            ) : (
+              <div className="w-[280px] h-[150px] flex justify-center items-center">
+                <div
+                  className={`border transition w-full ${
+                    isProcessing ? "border-mute" : "border-destructive"
+                  }`}
+                ></div>
+              </div>
+            )}
+            {/* <div className="w-32 h-12 bg-red-500"></div> */}
+            <div ref={wavesurferRef}></div>
+            <Button onClick={onPlayPause}>
+              {isPlaying ? "Pause" : "Play"}
+            </Button>
+          </div>
           <button
             className="group"
             onClick={handleChange}
@@ -149,7 +188,7 @@ export default function RecordingSession({
             {alert}
           </p>
         </div>
-        {mediaRecorder && (
+        {/* {mediaRecorder && (
           <LiveAudioVisualizer
             mediaRecorder={mediaRecorder}
             width={280}
@@ -157,7 +196,7 @@ export default function RecordingSession({
             barWidth={40}
             barColor="#7f1d1d"
           />
-        )}
+        )} */}
       </div>
     </>
   );

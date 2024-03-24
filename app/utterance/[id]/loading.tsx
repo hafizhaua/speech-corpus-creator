@@ -32,8 +32,8 @@ export default function UtteranceSkeleton() {
           <div className="flex flex-col gap-2">
             {Array(5)
               .fill(0)
-              .map(() => {
-                return <Skeleton className="w-full h-10" />;
+              .map((val, idx) => {
+                return <Skeleton className="w-full h-10" key={idx} />;
               })}
           </div>
         </div>
