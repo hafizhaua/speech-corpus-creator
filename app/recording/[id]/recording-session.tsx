@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAudioRecorder } from "react-audio-voice-recorder";
 import { LiveAudioVisualizer } from "react-audio-visualize";
 import { useWavesurfer } from "@wavesurfer/react";
+import { stringSimilarity } from "string-similarity-js";
 
 export default function RecordingSession({
   utterances,
@@ -15,11 +16,16 @@ export default function RecordingSession({
   const wavesurferRef = useRef<HTMLDivElement>(null);
 
   const [currIdx, setCurrIdx] = useState(0);
+  const [transcript, setTranscript] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [alert, setAlert] = useState("Start recording");
+  const [similarityIdx, setSimilarityIdx] = useState(1);
 
-  const { wavesurfer, isReady, isPlaying, currentTime } = useWavesurfer({
+  const { wavesurfer } = useWavesurfer({
     container: wavesurferRef,
-    waveColor: "purple",
-    height: 100,
+    waveColor: "#7f1d1d",
+    height: 150,
+    width: 350,
   });
 
   const handleNext = () => {
@@ -29,43 +35,34 @@ export default function RecordingSession({
     setCurrIdx((prev) => (prev > 0 ? prev - 1 : prev));
   };
 
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [alert, setAlert] = useState("Start recording");
-  const [preview, setPreview] = useState(false);
-
-  const onStop = () => {
-    setIsProcessing(true);
-    setAlert("Processing...");
-    setTimeout(() => {
-      setIsProcessing(false);
-      setAlert("Click to re-attempt");
-    }, 5000);
-  };
-
-  const onStart = () => {
-    setAlert("Recording...");
-  };
-
   const handleChange = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.onresult = async (event) => {
+      const text = event?.results[0][0].transcript;
+      setTranscript(text);
+    };
+
     if (!isRecording) {
       startRecording();
+      recognition.abort();
+      recognition.start();
       setAlert("Listening...");
     }
 
     if (isRecording) {
       stopRecording();
+      recognition.stop();
       setAlert("Analyzing...");
       setIsProcessing(true);
+      assessSimilarity();
 
       setTimeout(() => {
-        // handleNext();
-        setAlert("Finished!");
-
-        setTimeout(() => {
-          setIsProcessing(false);
-          setAlert("Click to re-attempt");
-        }, 1000);
-      }, 2000);
+        setIsProcessing(false);
+        setAlert("Click to re-attempt");
+      }, 1000);
     }
   };
 
@@ -79,6 +76,31 @@ export default function RecordingSession({
     recordingTime,
     mediaRecorder,
   } = useAudioRecorder();
+
+  function normalizeSentence(sentence: string) {
+    // Remove punctuation using regular expression
+    let withoutPunctuation = sentence.replace(
+      /[.,\/#!?$%\^&\*;:{}=\-_`~()]/g,
+      ""
+    );
+
+    // Convert to lowercase
+    let lowercaseWithoutPunctuation = withoutPunctuation.toLowerCase();
+
+    return lowercaseWithoutPunctuation;
+  }
+
+  const assessSimilarity = () => {
+    const source = normalizeSentence(transcript);
+    const target = normalizeSentence(utterances[currIdx]);
+
+    const similarity = stringSimilarity(source, target);
+
+    console.log("hasil: ", source);
+    console.log("target: ", target);
+    console.log("idx: ", similarity);
+    setSimilarityIdx(similarity);
+  };
 
   const downloadBlob = async (blob: Blob): Promise<void> => {
     const downloadBlob = blob;
@@ -112,39 +134,36 @@ export default function RecordingSession({
     <>
       <div className="text-muted-foreground space-y-1">
         <div className="flex gap-2 justify-center items-center">
-          {/* <Button variant="ghost" size="icon" onClick={handlePrev}>
+          <Button variant="ghost" size="icon" onClick={handlePrev}>
             <ChevronLeft />
-          </Button> */}
+          </Button>
           <span>
             {currIdx + 1} of {utterances?.length}
           </span>
-          {/* <Button variant="ghost" size="icon" onClick={handleNext}>
+          <Button variant="ghost" size="icon" onClick={handleNext}>
             <ChevronRight />
-          </Button> */}
+          </Button>
         </div>
         <p className="text-center text-sm text-muted-foreground">
           Click the record button and verbalize below sentence.
         </p>
       </div>
       <div className="space-y-8 mb-16 flex flex-col items-center gap-3">
-        <p className="text-3xl font-bold text-balance text-center h-24 md:h-16">
+        <p className="text-3xl font-bold text-balance text-center">
           {utterances[currIdx]}
         </p>
         <div className="text-center space-y-4">
-          <div
-          // className={`${
-          //   isRecording ? "opacity-50 h-32" : "opacity-0 h-0"
-          // } transition-all overflow-hidden delay-500 duration-1000`}
-          >
-            {mediaRecorder ? (
+          <div>
+            {mediaRecorder && (
               <LiveAudioVisualizer
                 mediaRecorder={mediaRecorder}
                 width={280}
                 height={150}
-                barWidth={40}
+                barWidth={1}
                 barColor="#7f1d1d"
               />
-            ) : (
+            )}
+            {!mediaRecorder && !recordingBlob && (
               <div className="w-[280px] h-[150px] flex justify-center items-center">
                 <div
                   className={`border transition w-full ${
@@ -153,11 +172,15 @@ export default function RecordingSession({
                 ></div>
               </div>
             )}
-            {/* <div className="w-32 h-12 bg-red-500"></div> */}
-            <div ref={wavesurferRef}></div>
-            <Button onClick={onPlayPause}>
-              {isPlaying ? "Pause" : "Play"}
-            </Button>
+            <div className="flex justify-center">
+              <div
+                ref={wavesurferRef}
+                className={`transition overflow-hidden ${
+                  recordingBlob && !isRecording ? "h-fit" : "h-0"
+                }`}
+                onClick={onPlayPause}
+              ></div>
+            </div>
           </div>
           <button
             className="group"
@@ -187,16 +210,9 @@ export default function RecordingSession({
           >
             {alert}
           </p>
+          <p>Transcripted: {transcript}</p>
+          <p>Similarity: {similarityIdx}</p>
         </div>
-        {/* {mediaRecorder && (
-          <LiveAudioVisualizer
-            mediaRecorder={mediaRecorder}
-            width={280}
-            height={150}
-            barWidth={40}
-            barColor="#7f1d1d"
-          />
-        )} */}
       </div>
     </>
   );
