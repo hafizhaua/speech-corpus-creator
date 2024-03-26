@@ -46,6 +46,7 @@ export default function RecordingSession({
     };
 
     if (!isRecording) {
+      setTranscript("");
       startRecording();
       recognition.abort();
       recognition.start();
@@ -75,7 +76,7 @@ export default function RecordingSession({
     isPaused,
     recordingTime,
     mediaRecorder,
-  } = useAudioRecorder();
+  } = useAudioRecorder({ channelCount: 2 });
 
   function normalizeSentence(sentence: string) {
     // Remove punctuation using regular expression
@@ -95,10 +96,6 @@ export default function RecordingSession({
     const target = normalizeSentence(utterances[currIdx]);
 
     const similarity = stringSimilarity(source, target);
-
-    console.log("hasil: ", source);
-    console.log("target: ", target);
-    console.log("idx: ", similarity);
     setSimilarityIdx(similarity);
   };
 
@@ -125,7 +122,7 @@ export default function RecordingSession({
 
     wavesurfer?.loadBlob(recordingBlob);
 
-    // downloadBlob(recordingBlob);
+    downloadBlob(recordingBlob);
 
     // recordingBlob will be present at this point after 'stopRecording' has been called
   }, [recordingBlob]);
