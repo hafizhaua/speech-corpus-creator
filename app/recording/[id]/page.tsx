@@ -43,7 +43,7 @@ export default async function RecordingPage({
   // ];
 
   return (
-    <div className="px-12 py-32 min-h-screen flex flex-col gap-12 items-center">
+    <div className="px-12 py-16 min-h-screen flex flex-col gap-12 items-center">
       <RecordingSession utterances={data} />
     </div>
   );

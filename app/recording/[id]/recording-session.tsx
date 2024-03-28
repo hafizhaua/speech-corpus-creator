@@ -7,6 +7,12 @@ import { useAudioRecorder } from "react-audio-voice-recorder";
 import { LiveAudioVisualizer } from "react-audio-visualize";
 import { useWavesurfer } from "@wavesurfer/react";
 import { stringSimilarity } from "string-similarity-js";
+import { normalizeSentence } from "./utils";
+
+interface RecordingDataProps {
+  label: string;
+  audioBlob: Blob;
+}
 
 export default function RecordingSession({
   utterances,
@@ -19,7 +25,9 @@ export default function RecordingSession({
   const [transcript, setTranscript] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [alert, setAlert] = useState("Start recording");
-  const [similarityIdx, setSimilarityIdx] = useState(1);
+  const [similarityIdx, setSimilarityIdx] = useState<number | null>(null);
+  const [recordingData, setRecordingData] = useState<RecordingDataProps[]>([]);
+  const [showResult, setShowResult] = useState(false);
 
   const { wavesurfer } = useWavesurfer({
     container: wavesurferRef,
@@ -28,11 +36,25 @@ export default function RecordingSession({
     width: 350,
   });
 
+  const {
+    startRecording,
+    stopRecording,
+    recordingBlob,
+    isRecording,
+    mediaRecorder,
+  } = useAudioRecorder({ channelCount: 2 });
+
   const handleNext = () => {
+    setShowResult(false);
     setCurrIdx((prev) => (prev < utterances.length - 1 ? prev + 1 : prev));
   };
   const handlePrev = () => {
+    setShowResult(false);
     setCurrIdx((prev) => (prev > 0 ? prev - 1 : prev));
+  };
+
+  const onPlayPause = () => {
+    wavesurfer && wavesurfer.playPause();
   };
 
   const handleChange = () => {
@@ -43,9 +65,12 @@ export default function RecordingSession({
     recognition.onresult = async (event) => {
       const text = event?.results[0][0].transcript;
       setTranscript(text);
+
+      assessSimilarity(text, utterances[currIdx]);
     };
 
     if (!isRecording) {
+      setShowResult(false);
       setTranscript("");
       startRecording();
       recognition.abort();
@@ -58,7 +83,6 @@ export default function RecordingSession({
       recognition.stop();
       setAlert("Analyzing...");
       setIsProcessing(true);
-      assessSimilarity();
 
       setTimeout(() => {
         setIsProcessing(false);
@@ -67,62 +91,19 @@ export default function RecordingSession({
     }
   };
 
-  const {
-    startRecording,
-    stopRecording,
-    togglePauseResume,
-    recordingBlob,
-    isRecording,
-    isPaused,
-    recordingTime,
-    mediaRecorder,
-  } = useAudioRecorder({ channelCount: 2 });
-
-  function normalizeSentence(sentence: string) {
-    // Remove punctuation using regular expression
-    let withoutPunctuation = sentence.replace(
-      /[.,\/#!?$%\^&\*;:{}=\-_`~()]/g,
-      ""
+  const assessSimilarity = (source: string, target: string) => {
+    const similarity = stringSimilarity(
+      normalizeSentence(source),
+      normalizeSentence(target)
     );
-
-    // Convert to lowercase
-    let lowercaseWithoutPunctuation = withoutPunctuation.toLowerCase();
-
-    return lowercaseWithoutPunctuation;
-  }
-
-  const assessSimilarity = () => {
-    const source = normalizeSentence(transcript);
-    const target = normalizeSentence(utterances[currIdx]);
-
-    const similarity = stringSimilarity(source, target);
     setSimilarityIdx(similarity);
-  };
-
-  const downloadBlob = async (blob: Blob): Promise<void> => {
-    const downloadBlob = blob;
-    const fileExt = "webm";
-    const url = URL.createObjectURL(downloadBlob);
-
-    const a = document.createElement("a");
-    a.style.display = "none";
-    a.href = url;
-    a.download = `audio.${fileExt}`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
-
-  const onPlayPause = () => {
-    wavesurfer && wavesurfer.playPause();
   };
 
   useEffect(() => {
     if (!recordingBlob) return;
 
+    setShowResult(true);
     wavesurfer?.loadBlob(recordingBlob);
-
-    downloadBlob(recordingBlob);
 
     // recordingBlob will be present at this point after 'stopRecording' has been called
   }, [recordingBlob]);
@@ -149,66 +130,90 @@ export default function RecordingSession({
         <p className="text-3xl font-bold text-balance text-center">
           {utterances[currIdx]}
         </p>
-        <div className="text-center space-y-4">
-          <div>
-            {mediaRecorder && (
-              <LiveAudioVisualizer
-                mediaRecorder={mediaRecorder}
-                width={280}
-                height={150}
-                barWidth={1}
-                barColor="#7f1d1d"
-              />
-            )}
-            {!mediaRecorder && !recordingBlob && (
-              <div className="w-[280px] h-[150px] flex justify-center items-center">
-                <div
-                  className={`border transition w-full ${
-                    isProcessing ? "border-mute" : "border-destructive"
-                  }`}
-                ></div>
-              </div>
-            )}
-            <div className="flex justify-center">
+        <div className="flex flex-col gap-12 items-center">
+          {mediaRecorder && (
+            <LiveAudioVisualizer
+              mediaRecorder={mediaRecorder}
+              width={280}
+              height={150}
+              barWidth={1}
+              barColor="#7f1d1d"
+            />
+          )}
+          {!showResult && !mediaRecorder && (
+            <div className="w-[280px] h-[150px] flex justify-center items-center">
               <div
-                ref={wavesurferRef}
-                className={`transition overflow-hidden ${
-                  recordingBlob && !isRecording ? "h-fit" : "h-0"
+                className={`border transition w-full ${
+                  isProcessing ? "border-mute" : "border-destructive"
                 }`}
-                onClick={onPlayPause}
               ></div>
             </div>
-          </div>
-          <button
-            className="group"
-            onClick={handleChange}
-            disabled={isProcessing}
-          >
-            <div
-              className={`grid place-items-center w-24 h-24 rounded-full border-4 transition ${
-                isRecording ? "border-destructive" : "border-muted-foreground"
-              } ${
-                isProcessing
-                  ? "cursor-not-allowed border-muted"
-                  : "group-hover:border-destructive"
-              }`}
+          )}
+
+          {/* <div className="flex justify-center"> */}
+          <div
+            ref={wavesurferRef}
+            className={`transition overflow-hidden ${
+              recordingBlob && !isRecording && showResult ? "h-fit" : "hidden"
+            }`}
+            onClick={onPlayPause}
+          ></div>
+          {/* </div> */}
+          <div className="text-center space-y-4">
+            <button
+              className="group"
+              onClick={handleChange}
+              disabled={isProcessing}
             >
               <div
-                className={`w-[72px] h-[72px] bg-destructive transition-all duration-500 ${
-                  isRecording ? "rounded-sm scale-50" : "rounded-[36px]"
-                } ${isProcessing ? "cursor-not-allowed bg-muted" : ""}`}
-              ></div>
+                className={`grid place-items-center w-24 h-24 rounded-full border-4 transition ${
+                  isRecording ? "border-destructive" : "border-muted-foreground"
+                } ${
+                  isProcessing
+                    ? "cursor-not-allowed border-muted"
+                    : "group-hover:border-destructive"
+                }`}
+              >
+                <div
+                  className={`w-[72px] h-[72px] bg-destructive transition-all duration-500 ${
+                    isRecording ? "rounded-sm scale-50" : "rounded-[36px]"
+                  } ${isProcessing ? "cursor-not-allowed bg-muted" : ""}`}
+                ></div>
+              </div>
+            </button>
+            <p
+              className={` text-muted-foreground ${
+                (isRecording || isProcessing) && "animate-pulse"
+              }`}
+            >
+              {alert}
+            </p>
+          </div>
+          {showResult && (
+            <div className="border border-muted rounded-lg px-6 py-4 flex gap-4">
+              <div className="space-y-1">
+                <span className="uppercase text-muted-foreground text-xs">
+                  Speech Accuracy
+                </span>
+                <p>{similarityIdx && Math.round(similarityIdx * 100)} %</p>
+              </div>
+              <div className="space-y-1">
+                <span className="uppercase text-muted-foreground text-xs">
+                  Recommendation
+                </span>
+                <p>
+                  {similarityIdx && similarityIdx < 0.7
+                    ? "Consider re-attempting with clear voice and tempo"
+                    : similarityIdx && similarityIdx < 0.95
+                    ? "Good enough. You can proceed to the next one"
+                    : "Perfect speech! Please continue"}
+                </p>
+              </div>
+              {/* <p className="text-destructive">{transcript}</p>
+              <p className="text-destructive">{}</p>
+              <p className="text-destructive">{similarityIdx}</p> */}
             </div>
-          </button>
-          <p
-            className={` text-muted-foreground ${
-              (isRecording || isProcessing) && "animate-pulse"
-            }`}
-          >
-            {alert}
-          </p>
-          <p>Transcripted: {transcript}</p>
-          <p>Similarity: {similarityIdx}</p>
+          )}
         </div>
       </div>
     </>
