@@ -2,14 +2,19 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAudioRecorder } from "react-audio-voice-recorder";
 import { LiveAudioVisualizer } from "react-audio-visualize";
 import { useWavesurfer } from "@wavesurfer/react";
 import { stringSimilarity } from "string-similarity-js";
 import { normalizeSentence } from "./utils";
+import { toast } from "sonner";
+
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 interface RecordingDataProps {
+  idx: number;
   label: string;
   audioBlob: Blob;
 }
@@ -32,7 +37,7 @@ export default function RecordingSession({
   const { wavesurfer } = useWavesurfer({
     container: wavesurferRef,
     waveColor: "#7f1d1d",
-    height: 150,
+    height: 125,
     width: 350,
   });
 
@@ -72,6 +77,7 @@ export default function RecordingSession({
     if (!isRecording) {
       setShowResult(false);
       setTranscript("");
+      setSimilarityIdx(0);
       startRecording();
       recognition.abort();
       recognition.start();
@@ -91,6 +97,22 @@ export default function RecordingSession({
     }
   };
 
+  const handleDownload = () => {
+    console.log(recordingData);
+
+    const zip = new JSZip();
+
+    recordingData.forEach((data) => {
+      zip.file(`${data.idx}.wav`, data.audioBlob);
+    });
+
+    console.log(zip);
+
+    zip.generateAsync({ type: "blob" }).then((content) => {
+      saveAs(content, "recordings.zip");
+    });
+  };
+
   const assessSimilarity = (source: string, target: string) => {
     const similarity = stringSimilarity(
       normalizeSentence(source),
@@ -99,11 +121,31 @@ export default function RecordingSession({
     setSimilarityIdx(similarity);
   };
 
+  // Function to upsert recording data based on idx
+  const upsertRecordingData = (idx: number, label: string, audioBlob: Blob) => {
+    setRecordingData((prevData) => {
+      const existingIndex = prevData.findIndex((data) => data.idx === idx);
+      if (existingIndex !== -1) {
+        // If data with given idx exists, update it
+        return prevData.map((data, index) =>
+          index === existingIndex ? { ...data, label, audioBlob } : data
+        );
+      } else {
+        // If data with given idx doesn't exist, add it
+        return [...prevData, { idx, label, audioBlob }];
+      }
+    });
+  };
+
   useEffect(() => {
     if (!recordingBlob) return;
 
     setShowResult(true);
     wavesurfer?.loadBlob(recordingBlob);
+
+    upsertRecordingData(currIdx, utterances[currIdx], recordingBlob);
+
+    toast.success(`Utterance ${currIdx + 1} saved.`);
 
     // recordingBlob will be present at this point after 'stopRecording' has been called
   }, [recordingBlob]);
@@ -112,36 +154,36 @@ export default function RecordingSession({
     <>
       <div className="text-muted-foreground space-y-1">
         <div className="flex gap-2 justify-center items-center">
-          <Button variant="ghost" size="icon" onClick={handlePrev}>
+          {/* <Button variant="ghost" size="icon" onClick={handlePrev}>
             <ChevronLeft />
-          </Button>
+          </Button> */}
           <span>
             {currIdx + 1} of {utterances?.length}
           </span>
-          <Button variant="ghost" size="icon" onClick={handleNext}>
+          {/* <Button variant="ghost" size="icon" onClick={handleNext}>
             <ChevronRight />
-          </Button>
+          </Button> */}
         </div>
         <p className="text-center text-sm text-muted-foreground">
           Click the record button and verbalize below sentence.
         </p>
       </div>
-      <div className="space-y-8 mb-16 flex flex-col items-center gap-3">
+      <div className="space-y-4 mb-16 flex flex-col items-center gap-3">
         <p className="text-3xl font-bold text-balance text-center">
           {utterances[currIdx]}
         </p>
-        <div className="flex flex-col gap-12 items-center">
+        <div className="flex flex-col gap-8 items-center">
           {mediaRecorder && (
             <LiveAudioVisualizer
               mediaRecorder={mediaRecorder}
               width={280}
-              height={150}
+              height={125}
               barWidth={1}
               barColor="#7f1d1d"
             />
           )}
           {!showResult && !mediaRecorder && (
-            <div className="w-[280px] h-[150px] flex justify-center items-center">
+            <div className="w-[280px] h-[125px] flex justify-center items-center">
               <div
                 className={`border transition w-full ${
                   isProcessing ? "border-mute" : "border-destructive"
@@ -190,30 +232,45 @@ export default function RecordingSession({
             </p>
           </div>
           {showResult && (
-            <div className="border border-muted rounded-lg px-6 py-4 flex gap-4">
-              <div className="space-y-1">
-                <span className="uppercase text-muted-foreground text-xs">
-                  Speech Accuracy
-                </span>
-                <p>{similarityIdx && Math.round(similarityIdx * 100)} %</p>
+            <>
+              <div className="border border-muted rounded-lg px-6 py-4 flex gap-4">
+                <div className="space-y-1">
+                  <span className="uppercase text-muted-foreground text-xs">
+                    Speech Accuracy
+                  </span>
+                  <p>{similarityIdx && Math.round(similarityIdx * 100)} %</p>
+                </div>
+                <div className="border max-h-fit border-muted"></div>
+                <div className="space-y-1">
+                  <span className="uppercase text-muted-foreground text-xs">
+                    Recommendation
+                  </span>
+                  <p>
+                    {similarityIdx && similarityIdx < 0.7
+                      ? "Consider re-attempting with clear voice and tempo"
+                      : similarityIdx && similarityIdx < 0.95
+                      ? "Decent. You may re-attempt or proceed to the next one."
+                      : "Perfect speech! Redirecting to the next one.."}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1">
-                <span className="uppercase text-muted-foreground text-xs">
-                  Recommendation
-                </span>
-                <p>
+              <Button
+                className="rounded-full space-x-2"
+                variant="outline"
+                onClick={handleNext}
+              >
+                <ArrowRight className="w-4 h-4 animate-pulse" />
+                <span>
+                  {" "}
                   {similarityIdx && similarityIdx < 0.7
-                    ? "Consider re-attempting with clear voice and tempo"
-                    : similarityIdx && similarityIdx < 0.95
-                    ? "Good enough. You can proceed to the next one"
-                    : "Perfect speech! Please continue"}
-                </p>
-              </div>
-              {/* <p className="text-destructive">{transcript}</p>
-              <p className="text-destructive">{}</p>
-              <p className="text-destructive">{similarityIdx}</p> */}
-            </div>
+                    ? "Proceed anyway"
+                    : "Go next"}
+                </span>
+              </Button>
+            </>
           )}
+
+          <Button onClick={handleDownload}>Download</Button>
         </div>
       </div>
     </>
