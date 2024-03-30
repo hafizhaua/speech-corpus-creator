@@ -1,7 +1,7 @@
 import React from "react";
-import RecordingSession from "./recording-session";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { Session } from "./session";
 
 const getUtterances = async (id: string) => {
   const supabase = createClient();
@@ -43,8 +43,8 @@ export default async function RecordingPage({
   // ];
 
   return (
-    <div className="px-12 py-16 min-h-screen flex flex-col gap-12 items-center">
-      <RecordingSession utterances={data} />
+    <div className="">
+      <Session utterances={data} />
     </div>
   );
 }

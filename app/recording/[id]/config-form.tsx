@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ConfigDataType } from "./types";
 
 const formSchema = z.object({
   fileFormat: z.string().min(2).max(50),
@@ -30,7 +31,11 @@ const formSchema = z.object({
   features: z.array(z.string()),
 });
 
-export default function ConfigForm() {
+export default function ConfigForm({
+  onSubmit,
+}: {
+  onSubmit: (data: ConfigDataType) => void;
+}) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,8 +60,9 @@ export default function ConfigForm() {
     { id: "autoGainControl", label: "Auto Gain Control" },
   ];
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function handleSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+    onSubmit(values);
   }
 
   return (
@@ -67,7 +73,7 @@ export default function ConfigForm() {
         the audio constraints.
       </p>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="fileFormat"
