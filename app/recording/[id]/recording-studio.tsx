@@ -28,7 +28,6 @@ export default function RecordingStudio({
   const wavesurferRef = useRef<HTMLDivElement>(null);
 
   const [currIdx, setCurrIdx] = useState(0);
-  // const [transcript, setTranscript] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [alert, setAlert] = useState("Start recording");
   const [similarityIdx, setSimilarityIdx] = useState<number | null>(null);
@@ -42,14 +41,7 @@ export default function RecordingStudio({
     width: 350,
   });
 
-  console.log({
-    channelCount: Number(configData?.channels),
-    sampleRate: Number(configData.sampleRate),
-    sampleSize: Number(configData.sampleSize),
-    echoCancellation: configData.features.includes("echoCancellation"),
-    noiseSuppression: configData.features.includes("noiseSuppression"),
-    autoGainControl: configData.features.includes("autoGainControl"),
-  });
+  const isAssessAccuracy = configData?.features.includes("speechAccuracy");
 
   const {
     startRecording,
@@ -58,9 +50,9 @@ export default function RecordingStudio({
     isRecording,
     mediaRecorder,
   } = useAudioRecorder({
-    channelCount: Number(configData?.channels),
-    sampleRate: Number(configData?.sampleRate),
-    sampleSize: Number(configData?.sampleSize),
+    channelCount: configData?.channels,
+    sampleRate: configData?.sampleRate,
+    sampleSize: configData?.sampleSize,
     echoCancellation: configData?.features.includes("echoCancellation"),
     noiseSuppression: configData?.features.includes("noiseSuppression"),
     autoGainControl: configData?.features.includes("autoGainControl"),
@@ -70,6 +62,7 @@ export default function RecordingStudio({
     setShowResult(false);
     setCurrIdx((prev) => (prev < utterances.length - 1 ? prev + 1 : prev));
   };
+
   const handlePrev = () => {
     setShowResult(false);
     setCurrIdx((prev) => (prev > 0 ? prev - 1 : prev));
@@ -80,30 +73,42 @@ export default function RecordingStudio({
   };
 
   const handleChange = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.onresult = async (event) => {
-      const text = event?.results[0][0].transcript;
-      // setTranscript(text);
-
-      assessSimilarity(text, utterances[currIdx]);
-    };
-
     if (!isRecording) {
       setShowResult(false);
-      // setTranscript("");
       setSimilarityIdx(0);
       startRecording();
-      recognition.abort();
-      recognition.start();
+
+      if (isAssessAccuracy) {
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = "en-US";
+        recognition.onresult = async (event) => {
+          const text = event?.results[0][0].transcript;
+          assessSimilarity(text, utterances[currIdx]);
+        };
+        recognition.abort();
+        recognition.start();
+      }
+
       setAlert("Listening...");
     }
 
     if (isRecording) {
       stopRecording();
-      recognition.stop();
+
+      if (isAssessAccuracy) {
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = "en-US";
+        recognition.onresult = async (event) => {
+          const text = event?.results[0][0].transcript;
+          assessSimilarity(text, utterances[currIdx]);
+        };
+        recognition.stop();
+      }
+
       setAlert("Analyzing...");
       setIsProcessing(true);
 
@@ -115,15 +120,11 @@ export default function RecordingStudio({
   };
 
   const handleDownload = () => {
-    console.log(recordingData);
-
     const zip = new JSZip();
 
     recordingData.forEach((data) => {
       zip.file(`${data.idx}.webm`, data.audioBlob);
     });
-
-    console.log(zip);
 
     zip.generateAsync({ type: "blob" }).then((content) => {
       saveAs(content, "recordings.zip");
@@ -213,8 +214,6 @@ export default function RecordingStudio({
               ></div>
             </div>
           )}
-
-          {/* <div className="flex justify-center"> */}
           <div
             ref={wavesurferRef}
             className={`transition overflow-hidden ${
@@ -253,7 +252,7 @@ export default function RecordingStudio({
               {alert}
             </p>
           </div>
-          {showResult && (
+          {isAssessAccuracy && showResult && (
             <>
               <div className="border border-muted rounded-lg px-6 py-4 flex gap-4">
                 <div className="space-y-1">
@@ -276,20 +275,22 @@ export default function RecordingStudio({
                   </p>
                 </div>
               </div>
-              <Button
-                className="rounded-full space-x-2"
-                variant="outline"
-                onClick={handleNext}
-              >
-                <ArrowRight className="w-4 h-4 animate-pulse" />
-                <span>
-                  {" "}
-                  {similarityIdx && similarityIdx < 0.7
-                    ? "Proceed anyway"
-                    : "Go next"}
-                </span>
-              </Button>
             </>
+          )}
+          {showResult && (
+            <Button
+              className="rounded-full space-x-2"
+              variant="outline"
+              onClick={handleNext}
+            >
+              <ArrowRight className="w-4 h-4 animate-pulse" />
+              <span>
+                {" "}
+                {isAssessAccuracy && similarityIdx && similarityIdx < 0.7
+                  ? "Proceed anyway"
+                  : "Go next"}
+              </span>
+            </Button>
           )}
 
           <Button onClick={handleDownload}>Download</Button>

@@ -24,10 +24,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ConfigDataType } from "./types";
 
 const formSchema = z.object({
-  fileFormat: z.string().min(2).max(50),
-  sampleRate: z.string().min(2).max(50),
-  sampleSize: z.string().min(2).max(50),
-  channels: z.string(),
+  fileFormat: z.string(),
+  sampleRate: z.coerce.number(),
+  sampleSize: z.coerce.number(),
+  channels: z.coerce.number(),
   features: z.array(z.string()),
 });
 
@@ -39,13 +39,15 @@ export default function ConfigForm({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fileFormat: "",
-      sampleRate: "",
-      sampleSize: "",
-      channels: "",
-      features: [],
+      fileFormat: ".wav",
+      sampleRate: 44100,
+      sampleSize: 16,
+      channels: 1,
+      features: ["echoCancellation", "noiseSuppression", "autoGainControl"],
     },
   });
+
+  console.log(navigator.mediaDevices.getSupportedConstraints());
 
   const fileFormatOption = [".wav", ".mp3", ".webm"];
   const sampleRateOption = [

@@ -1,8 +1,8 @@
 export type ConfigDataType = {
   fileFormat: string;
-  sampleRate: string;
-  sampleSize: string;
-  channels: string;
+  sampleRate: number;
+  sampleSize: number;
+  channels: number;
   features: string[];
 };
 
