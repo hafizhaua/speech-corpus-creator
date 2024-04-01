@@ -6,6 +6,8 @@ import {
   FolderArchive,
 } from "lucide-react";
 import React from "react";
+import { useForm } from "react-hook-form";
+import { ExportForm } from "./export-form";
 
 export default function Output() {
   const fileStructure: Folder = {
@@ -34,6 +36,8 @@ export default function Output() {
     ],
   };
 
+  const transcriptContent = [""];
+
   return (
     <div className="p-8 py-12 md:px-10 md:py-12 space-y-4">
       <h1 className="text-2xl font-bold">Export Configuration</h1>
@@ -42,26 +46,29 @@ export default function Output() {
         you would like to format the corpus and it will be ready for download!
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-12">
-        <div className="col-span-5">tes</div>
-        <div className="col-span-7 py-8 px-6 rounded-lg border border-muted space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-widest">
-            Result Preview
-          </h2>
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+        <div className="md:col-span-5">
+          <ExportForm />
+        </div>
+        <div className="md:col-span-7 ">
+          <div className="md:top-8 md:sticky py-8 px-6 rounded-lg border border-muted space-y-4">
+            <h2 className="text-sm font-bold uppercase tracking-widest">
+              Result Preview
+            </h2>
 
-          <div className="grid grid-cols-12">
-            <div className="col-span-4 space-y-4">
-              <h2 className="text-xs text-muted-foreground uppercase tracking-widest">
-                File Structure
-              </h2>
-              <FileTree data={[fileStructure]} />
-            </div>
-            <div className="col-span-8 space-y-4">
-              <h2 className="text-xs text-muted-foreground uppercase tracking-widest">
-                Transcript Content
-              </h2>
-
-              <TranscriptContent />
+            <div className="flex gap-4">
+              <div className="space-y-4">
+                <h2 className="text-xs text-muted-foreground uppercase tracking-widest">
+                  File Structure
+                </h2>
+                <FileTree data={[fileStructure]} />
+              </div>
+              <div className="flex-1 space-y-4">
+                <h2 className="text-xs text-muted-foreground uppercase tracking-widest">
+                  Transcript Content
+                </h2>
+                <TranscriptContent />
+              </div>
             </div>
           </div>
         </div>
@@ -130,5 +137,20 @@ const FileTree: React.FC<FileTreeProps> = ({ data }) => {
 };
 
 const TranscriptContent = () => {
-  return <div className="">tes</div>;
+  return (
+    <div className="">
+      <span className="rounded-md text-xs px-4 py-2 bg-muted text-right text-muted-foreground mb-4">
+        utterances.csv
+      </span>
+      <div className="bg-muted w-full rounded-md rounded-tl-none py-4 px-4 text-xs">
+        <code className="text-ellipsis w-full overflow-hidden">
+          <p className="">HUA1|Hello, how you do?</p>
+          <p className="">HUA2|Nothing interested right here</p>
+          <p className="">...</p>
+          <p className="">HUA78|What about the backside Chinese restaurant?</p>
+          <p className="">HUA79|Napping is a love-hate all time activity.</p>
+        </code>
+      </div>
+    </div>
+  );
 };
