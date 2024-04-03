@@ -22,7 +22,14 @@ const getUtterances = async (id: string) => {
     const utterancesString = data?.utterances;
     const utterancesArray = utterancesString.split("|");
 
-    return utterancesArray;
+    const results = utterancesArray.map((utt: string, idx: number) => {
+      return {
+        id: idx + 1,
+        text: utt.trim(),
+      };
+    });
+
+    return results;
   }
 
   return null;

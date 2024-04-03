@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  File,
-  FileAudio,
-  FileSpreadsheet,
-  Folder,
-  FolderArchive,
-} from "lucide-react";
 import React from "react";
-import { ExportForm } from "./export-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -31,6 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { FileTree } from "./file-tree";
+import { ExportFormType, UtteranceType } from "./types";
 
 const formSchema = z.object({
   fileFormat: z.string(),
@@ -45,7 +39,11 @@ const formSchema = z.object({
   transcriptionDelimiter: z.string(),
 });
 
-export default function Output() {
+export default function ExportForm({
+  utterances,
+}: {
+  utterances: UtteranceType[];
+}) {
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -301,7 +299,7 @@ export default function Output() {
 
                 <FormField
                   control={form.control}
-                  name="transcriptionFormat"
+                  name="transcriptionDelimiter"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Utterance Delimiter</FormLabel>
@@ -355,7 +353,11 @@ export default function Output() {
                 <h2 className="text-xs text-muted-foreground uppercase tracking-widest">
                   Transcript Content
                 </h2>
-                <TranscriptContent />
+                <TranscriptContent
+                  fileName={`${formValue.transcriptionName}.${formValue.transcriptionFormat}`}
+                  utterances={utterances}
+                  formValue={formValue}
+                />
               </div>
             </div>
           </div>
@@ -365,205 +367,59 @@ export default function Output() {
   );
 }
 
-interface File {
-  id: string;
-  name: string;
-  format: string;
-  type: "file"; // Corrected to specify type as 'file'
-}
-
-interface Folder {
-  id: string;
-  name: string;
-  type: "folder"; // Corrected to specify type as 'folder'
-  children?: FileSystemItem[]; // Recursive type definition
-}
-
-type FileSystemItem = Folder | File;
-
-interface FileTreeProps {
-  formValue: any;
-}
-
-const FileTree: React.FC<FileTreeProps> = ({ formValue }) => {
-  const rootFile: Folder = {
-    id: "root",
-    name: `${
-      formValue.fileName || formValue.fileFormat
-        ? `${formValue.fileName}.${formValue.fileFormat}`
-        : ""
-    }`,
-    type: "folder",
-    children: [],
-  };
-
-  const createFolderStructureFromPath = (
-    path: string,
-    content: FileSystemItem[]
-  ): Folder | null => {
-    // if (!path || path === "/") {
-    //   return null; // Return null for an empty or root path
-    // }
-
-    const pathParts = path.split("/").filter((part) => part !== "");
-
-    const createFolder = (name: string): Folder => {
-      return {
-        id: Math.random().toString(36).substring(2, 9), // Generate a random ID
-        name,
-        type: "folder",
-        children: [],
-      };
-    };
-
-    const root = rootFile;
-
-    let currentFolder: Folder | null = root;
-
-    for (let i = 0; i < pathParts.length; i++) {
-      const folderName = pathParts[i];
-      const existingFolder: any = currentFolder?.children?.find(
-        (item): item is Folder =>
-          item.type === "folder" && item.name === folderName
-      );
-
-      if (existingFolder) {
-        currentFolder = existingFolder;
-      } else {
-        const newFolder = createFolder(folderName);
-        currentFolder?.children?.push(newFolder);
-        currentFolder = newFolder;
-      }
-    }
-
-    console.log(content, currentFolder);
-
-    if (content) {
-      currentFolder?.children?.push(...content);
-    }
-
-    return root;
-  };
-
-  const createFileArray = (
-    count: number,
-    prefix: string,
-    suffix: string,
-    format: string
-  ) => {
-    const fileArray = [];
-
-    for (let i = 1; i <= count; i++) {
-      if (i > 2 && i < count - 2 && count > 5) {
-        const file = {
-          name: "..",
-          id: "etc",
-          format: "",
-          type: "file",
-        };
-        fileArray.push(file);
-        i = count - 2;
-      } else {
-        let id = i.toString();
-
-        if (formValue.audioName === "uuid") {
-          id = Math.random().toString(36).substring(2, 9);
-        }
-
-        const name = prefix + id + suffix;
-        const file = {
-          name,
-          id,
-          format,
-          type: "file",
-        };
-
-        fileArray.push(file);
-      }
-    }
-
-    return fileArray as FileSystemItem[];
-  };
-
-  const audioPath = formValue?.audioPath || "/";
-  const transcriptionPath = formValue.transcriptionPath || "/";
-
-  const audioFiles = createFileArray(
-    30,
-    formValue.audioPrefix,
-    formValue.audioSuffix,
-    "wav"
-  );
-
-  createFolderStructureFromPath(audioPath, audioFiles);
-
-  createFolderStructureFromPath(transcriptionPath, [
-    {
-      id: "utterances",
-      name: formValue.transcriptionName || "transcription",
-      format: formValue.transcriptionFormat || "csv",
-      type: "file",
-    },
-  ]);
-
-  const fileStructure = rootFile;
-
-  const renderTree = (items: FileSystemItem[]) => {
-    return (
-      <ul className="pl-4 space-y-2 text-primary/75 text-sm">
-        {items.map((item) => (
-          <li key={item.id}>
-            {item.type === "file" ? (
-              <div className="flex gap-2 items-center">
-                {["csv", "txt"].includes(item.format) ? (
-                  <FileSpreadsheet className="w-5 h-5" />
-                ) : (
-                  ["wav", "mp3", "m4a", "webm"].includes(item.format) && (
-                    <FileAudio className="w-5 h-5" />
-                  )
-                )}
-                <span className="">
-                  {item.name}.{item.format}
-                </span>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="flex gap-2 items-center">
-                  {item.id === "root" ? (
-                    <FolderArchive className="w-5 h-5 text-white" />
-                  ) : (
-                    <Folder className="w-5 h-5" />
-                  )}
-                  <span className="">{item.name}</span>
-                </div>
-                {renderTree((item as Folder).children)}
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
-    );
-  };
-
-  return <div>{renderTree([fileStructure])}</div>;
-};
-
-const TranscriptContent = () => {
-  const csvData = `1,2,3
-  -1,0,4
-  5,-6,7`;
+const TranscriptContent = ({
+  fileName,
+  utterances,
+  formValue,
+}: {
+  fileName: string;
+  utterances: UtteranceType[];
+  formValue: ExportFormType;
+}) => {
   return (
-    <div className="">
+    <div className="w-full relative">
       <span className="rounded-md text-xs px-4 py-2 bg-muted text-right text-muted-foreground mb-4">
-        utterances.csv
+        {fileName === "." ? "sample.csv" : fileName}
       </span>
-      <div className="bg-muted w-full rounded-md rounded-tl-none py-4 px-4 text-xs">
-        <code className="text-ellipsis w-full overflow-hidden">
-          <p className="">HUA1|Hello, how you do?</p>
-          <p className="">HUA2|Nothing interested right here</p>
-          <p className="">...</p>
-          <p className="">HUA78|What about the backside Chinese restaurant?</p>
-          <p className="">HUA79|Napping is a love-hate all time activity.</p>
+      <div className="absolute w-full bg-muted rounded-md rounded-tl-none py-4 px-4 text-xs">
+        <code className=" text-ellipsis w-full overflow-hidden">
+          {utterances.length > 7 ? (
+            <>
+              {utterances.slice(0, 3).map((utt) => {
+                return (
+                  <p className="truncate">
+                    {formValue.audioPrefix}
+                    {utt.id}
+                    {formValue.audioSuffix}|{utt.text}
+                  </p>
+                );
+              })}
+              <p className="my-2">...</p>
+              {utterances
+                .slice(utterances.length - 3, utterances.length)
+                .map((utt) => {
+                  return (
+                    <p className="truncate">
+                      {formValue.audioPrefix}
+                      {utt.id}
+                      {formValue.audioSuffix}|{utt.text}
+                    </p>
+                  );
+                })}
+            </>
+          ) : (
+            <>
+              {utterances.map((utt) => {
+                return (
+                  <p className="truncate">
+                    {formValue.audioPrefix}
+                    {utt.id}
+                    {formValue.audioSuffix}|{utt.text}
+                  </p>
+                );
+              })}
+            </>
+          )}
         </code>
       </div>
     </div>

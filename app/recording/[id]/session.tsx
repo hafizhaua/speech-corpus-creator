@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { ConfigDataType, RecordingDataType } from "./types";
+import { ConfigDataType, RecordingDataType, UtteranceType } from "./types";
 import RecordingStudio from "./recording-studio";
 import ConfigForm from "./config-form";
+import ExportForm from "./export-form";
 
-export const Session = ({ utterances }: { utterances: string[] }) => {
-  const [currentStep, setCurrentStep] = useState(1);
+export const Session = ({ utterances }: { utterances: UtteranceType[] }) => {
+  const [currentStep, setCurrentStep] = useState(3);
   const [configData, setConfigData] = useState<ConfigDataType | null>(null);
   const [audioData, setAudioData] = useState<RecordingDataType[]>([]);
 
@@ -36,9 +37,7 @@ export const Session = ({ utterances }: { utterances: string[] }) => {
           onRecordingComplete={handleRecordingComplete}
         />
       )}
-      {/* {currentStep === 3 && (
-        <ExportForm audioData={audioData} onRestart={handleRestart} />
-      )} */}
+      {currentStep === 3 && <ExportForm utterances={utterances} />}
     </div>
   );
 };

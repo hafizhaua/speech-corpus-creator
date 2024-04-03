@@ -12,11 +12,11 @@ import { toast } from "sonner";
 
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { ConfigDataType, RecordingDataType } from "./types";
+import { ConfigDataType, RecordingDataType, UtteranceType } from "./types";
 
 interface RecordingStudioProps {
   configData: ConfigDataType;
-  utterances: string[];
+  utterances: UtteranceType[];
   onRecordingComplete: (blobs: RecordingDataType[]) => void;
 }
 
@@ -85,7 +85,7 @@ export default function RecordingStudio({
         recognition.lang = "en-US";
         recognition.onresult = async (event) => {
           const text = event?.results[0][0].transcript;
-          assessSimilarity(text, utterances[currIdx]);
+          assessSimilarity(text, utterances[currIdx].text);
         };
         recognition.abort();
         recognition.start();
@@ -104,7 +104,7 @@ export default function RecordingStudio({
         recognition.lang = "en-US";
         recognition.onresult = async (event) => {
           const text = event?.results[0][0].transcript;
-          assessSimilarity(text, utterances[currIdx]);
+          assessSimilarity(text, utterances[currIdx].text);
         };
         recognition.stop();
       }
@@ -140,17 +140,21 @@ export default function RecordingStudio({
   };
 
   // Function to upsert recording data based on idx
-  const upsertRecordingData = (idx: number, label: string, audioBlob: Blob) => {
+  const upsertRecordingData = (
+    idx: number,
+    utterance: UtteranceType,
+    audioBlob: Blob
+  ) => {
     setRecordingData((prevData) => {
       const existingIndex = prevData.findIndex((data) => data.idx === idx);
       if (existingIndex !== -1) {
         // If data with given idx exists, update it
         return prevData.map((data, index) =>
-          index === existingIndex ? { ...data, label, audioBlob } : data
+          index === existingIndex ? { ...data, utterance, audioBlob } : data
         );
       } else {
         // If data with given idx doesn't exist, add it
-        return [...prevData, { idx, label, audioBlob }];
+        return [...prevData, { idx, utterance, audioBlob }];
       }
     });
   };
@@ -193,7 +197,7 @@ export default function RecordingStudio({
       </div>
       <div className="space-y-4 mb-16 flex flex-col items-center gap-3">
         <p className="text-3xl font-bold text-balance text-center">
-          {utterances[currIdx]}
+          {utterances[currIdx].text}
         </p>
         <div className="flex flex-col gap-8 items-center">
           {mediaRecorder && (
