@@ -22,15 +22,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { FileTree } from "./file-tree";
 import { ExportFormType, UtteranceType } from "./types";
+import { TranscriptContent } from "./content-preview";
 
 const formSchema = z.object({
+  preset: z.string().optional(),
   fileFormat: z.string(),
   fileName: z.string(),
   audioPath: z.string(),
-  audioName: z.string(),
+  audioNamePattern: z.string(),
   audioPrefix: z.string(),
   audioSuffix: z.string(),
   transcriptionPath: z.string(),
@@ -44,14 +54,13 @@ export default function ExportForm({
 }: {
   utterances: UtteranceType[];
 }) {
-  // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fileFormat: "",
       fileName: "",
       audioPath: "",
-      audioName: "",
+      audioNamePattern: "",
       audioPrefix: "",
       audioSuffix: "",
       transcriptionPath: "",
@@ -63,12 +72,41 @@ export default function ExportForm({
 
   const formValue = form.watch();
 
-  // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
     console.log(values);
   }
+
+  const handlePresetChange = (format: string) => {
+    if (format === "ljspeech") {
+      form.reset({
+        fileFormat: "zip",
+        fileName: "ljspeech",
+        audioPath: "wavs",
+        audioNamePattern: "zeros",
+        audioPrefix: "LJ001-",
+        audioSuffix: "",
+        transcriptionPath: "",
+        transcriptionName: "transcripts",
+        transcriptionFormat: "csv",
+        transcriptionDelimiter: "|",
+      });
+    }
+
+    if (format === "piper") {
+      form.reset({
+        fileFormat: "zip",
+        fileName: "piper",
+        audioPath: "wavs",
+        audioNamePattern: "asc",
+        audioPrefix: "",
+        audioSuffix: "",
+        transcriptionPath: "",
+        transcriptionName: "metadata",
+        transcriptionFormat: "csv",
+        transcriptionDelimiter: "|",
+      });
+    }
+  };
 
   return (
     <div className="p-8 py-12 md:px-10 md:py-12 space-y-4">
@@ -83,6 +121,30 @@ export default function ExportForm({
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start mb-2"
+                    >
+                      Pick by templates
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuLabel>Standard Format</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handlePresetChange("ljspeech")}
+                    >
+                      LJSpeech
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handlePresetChange("piper")}
+                    >
+                      Piper TTS
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground/75 text-xs tracking-widest uppercase">
                     Master Package
@@ -97,6 +159,7 @@ export default function ExportForm({
                       <FormLabel>File Format</FormLabel>
                       <Select
                         onValueChange={field.onChange}
+                        value={field.value}
                         defaultValue={field.value?.toString()}
                       >
                         <FormControl>
@@ -157,9 +220,6 @@ export default function ExportForm({
                             className="rounded-l-none w-full"
                             {...field}
                           />
-                          {/* <div className="py-2 px-4 text-center bg-muted rounded-r-md">
-                      /
-                    </div> */}
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -168,7 +228,7 @@ export default function ExportForm({
                 />
                 <FormField
                   control={form.control}
-                  name="audioName"
+                  name="audioNamePattern"
                   render={({ field }) => (
                     <FormItem className="">
                       <FormLabel>File Name</FormLabel>
@@ -187,6 +247,7 @@ export default function ExportForm({
                         />
                         <Select
                           onValueChange={field.onChange}
+                          value={field.value}
                           defaultValue={field.value?.toString()}
                         >
                           <FormControl className="col-span-2">
@@ -200,6 +261,9 @@ export default function ExportForm({
                             </SelectItem>
                             <SelectItem key="asc" value="asc">
                               Ascending Number
+                            </SelectItem>
+                            <SelectItem key="zeros" value="zeros">
+                              Ascending Number with Leading Zeros
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -258,6 +322,7 @@ export default function ExportForm({
                     <FormItem>
                       <FormLabel>File Format</FormLabel>
                       <Select
+                        value={field.value}
                         onValueChange={field.onChange}
                         defaultValue={field.value?.toString()}
                       >
@@ -305,6 +370,7 @@ export default function ExportForm({
                       <FormLabel>Utterance Delimiter</FormLabel>
                       <Select
                         onValueChange={field.onChange}
+                        value={field.value}
                         defaultValue={field.value?.toString()}
                       >
                         <FormControl>
@@ -313,14 +379,14 @@ export default function ExportForm({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem key="vb" value="vb">
+                          <SelectItem key="vb" value="|">
                             Pipe/Vertical Bar
                           </SelectItem>
-                          <SelectItem key="cm" value="cm">
+                          <SelectItem key="cm" value=",">
                             Comma
                           </SelectItem>
-                          <SelectItem key="nl" value="nl">
-                            Newline
+                          <SelectItem key="sp" value=" ">
+                            Space
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -347,7 +413,7 @@ export default function ExportForm({
                 <h2 className="text-xs text-muted-foreground uppercase tracking-widest">
                   File Structure
                 </h2>
-                <FileTree formValue={formValue} />
+                <FileTree formValue={formValue} utterances={utterances} />
               </div>
               <div className="flex-1 space-y-4">
                 <h2 className="text-xs text-muted-foreground uppercase tracking-widest">
@@ -366,62 +432,3 @@ export default function ExportForm({
     </div>
   );
 }
-
-const TranscriptContent = ({
-  fileName,
-  utterances,
-  formValue,
-}: {
-  fileName: string;
-  utterances: UtteranceType[];
-  formValue: ExportFormType;
-}) => {
-  return (
-    <div className="w-full relative">
-      <span className="rounded-md text-xs px-4 py-2 bg-muted text-right text-muted-foreground mb-4">
-        {fileName === "." ? "sample.csv" : fileName}
-      </span>
-      <div className="absolute w-full bg-muted rounded-md rounded-tl-none py-4 px-4 text-xs">
-        <code className=" text-ellipsis w-full overflow-hidden">
-          {utterances.length > 7 ? (
-            <>
-              {utterances.slice(0, 3).map((utt) => {
-                return (
-                  <p className="truncate">
-                    {formValue.audioPrefix}
-                    {utt.id}
-                    {formValue.audioSuffix}|{utt.text}
-                  </p>
-                );
-              })}
-              <p className="my-2">...</p>
-              {utterances
-                .slice(utterances.length - 3, utterances.length)
-                .map((utt) => {
-                  return (
-                    <p className="truncate">
-                      {formValue.audioPrefix}
-                      {utt.id}
-                      {formValue.audioSuffix}|{utt.text}
-                    </p>
-                  );
-                })}
-            </>
-          ) : (
-            <>
-              {utterances.map((utt) => {
-                return (
-                  <p className="truncate">
-                    {formValue.audioPrefix}
-                    {utt.id}
-                    {formValue.audioSuffix}|{utt.text}
-                  </p>
-                );
-              })}
-            </>
-          )}
-        </code>
-      </div>
-    </div>
-  );
-};

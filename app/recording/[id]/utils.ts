@@ -79,7 +79,6 @@ export const createFileArray = (
   limit = -1
 ) => {
   const fileArray = [];
-
   for (let i = 1; i <= count; i++) {
     if (i > limit && i < count - limit && count > 10) {
       const file = {
@@ -95,6 +94,8 @@ export const createFileArray = (
 
       if (pattern === "uuid") {
         id = Math.random().toString(36).substring(2, 5);
+      } else if (pattern === "zeros") {
+        id = padWithLeadingZeros(count, i);
       }
 
       const name = prefix + id + suffix;
@@ -110,4 +111,17 @@ export const createFileArray = (
   }
 
   return fileArray as FileSystemItem[];
+};
+
+export const padWithLeadingZeros = (maxValue: number, n: number): string => {
+  const maxDigits = Math.floor(Math.log10(maxValue) + 1);
+  const nString = n.toString();
+  const paddingLength = maxDigits - nString.length;
+
+  if (paddingLength <= 0) {
+    return nString;
+  }
+
+  const padding = "0".repeat(paddingLength);
+  return padding + nString;
 };

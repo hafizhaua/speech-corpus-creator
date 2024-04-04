@@ -7,7 +7,10 @@ import {
 import { FileSystemItem, FileTreeProps, Folder } from "./types";
 import { createFileArray, createFolderStructureFromPath } from "./utils";
 
-export const FileTree: React.FC<FileTreeProps> = ({ formValue }) => {
+export const FileTree: React.FC<FileTreeProps> = ({
+  formValue,
+  utterances,
+}) => {
   let rootFile: Folder = {
     id: "root",
     name: `${
@@ -23,9 +26,9 @@ export const FileTree: React.FC<FileTreeProps> = ({ formValue }) => {
   const transcriptionPath = formValue.transcriptionPath || "/";
 
   const audioFiles = createFileArray(
-    30,
+    utterances.length,
     formValue.audioPrefix,
-    formValue.audioName,
+    formValue.audioNamePattern,
     formValue.audioSuffix,
     "wav",
     2
@@ -35,7 +38,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ formValue }) => {
   rootFile = createFolderStructureFromPath(rootFile, transcriptionPath, [
     {
       id: "utterances",
-      name: formValue.transcriptionName || "transcription",
+      name: formValue.transcriptionName || "sample",
       format: formValue.transcriptionFormat || "csv",
       type: "file",
     },
@@ -71,7 +74,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ formValue }) => {
                   )}
                   <span className="">{item.name}</span>
                 </div>
-                {renderTree((item as Folder).children)}
+                {renderTree((item as Folder).children as FileSystemItem[])}
               </div>
             )}
           </li>

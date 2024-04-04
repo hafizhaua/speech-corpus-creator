@@ -34,14 +34,15 @@ export interface Folder {
 export type FileSystemItem = Folder | File;
 
 export interface FileTreeProps {
-  formValue: any;
+  formValue: ExportFormType;
+  utterances: UtteranceType[];
 }
 
 export type ExportFormType = {
   fileFormat: string;
   fileName: string;
   audioPath: string;
-  audioName: string;
+  audioNamePattern: string;
   audioPrefix: string;
   audioSuffix: string;
   transcriptionPath: string;
