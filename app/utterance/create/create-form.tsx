@@ -23,15 +23,18 @@ import {
 } from "@/components/ui/select";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
-import { Lightbulb, Upload } from "lucide-react";
+import { Lightbulb, PlusCircle, Upload } from "lucide-react";
 
 import { Switch } from "@/components/ui/switch";
 import { readFileAsync } from "@/lib/utils";
@@ -41,6 +44,7 @@ import { columns } from "./columns";
 import { createUtteranceSet } from "./actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import useUtteranceSetStore from "./store";
 // import ReactCountryFlag from "react-country-flag";
 
 const formSchema = z.object({
@@ -60,7 +64,7 @@ type LanguagesType = {
 };
 
 type UtterancesType = {
-  id: string | number;
+  id: string;
   text: string;
 };
 
@@ -69,8 +73,11 @@ interface CreateFormProps {
 }
 
 export const CreateForm: React.FC<CreateFormProps> = ({ languages }) => {
-  const [tableData, setTableData] = useState<UtterancesType[]>([]);
-  // const [languages, setLanguages] = useState<LanguagesType[]>([]);
+  // const [tableData, setTableData] = useState<UtterancesType[]>([]);
+  const [newUtterance, setNewUtterance] = useState("");
+
+  const { utteranceSets, addUtterance, resetUtteranceSet } =
+    useUtteranceSetStore();
 
   const router = useRouter();
 
@@ -89,7 +96,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ languages }) => {
     const response = await createUtteranceSet(values);
 
     form.reset();
-    setTableData([]);
+    // setTableData([]);
 
     if (response?.error) {
       console.log(response?.error);
@@ -110,34 +117,22 @@ export const CreateForm: React.FC<CreateFormProps> = ({ languages }) => {
     if (file) {
       try {
         const content = await readFileAsync(file);
-        const sentencesArray = content
-          .split("\n")
-          .map((sentence, index) => {
-            const trimmedSentence = sentence.trim();
-            return trimmedSentence !== ""
-              ? {
-                  id: index + 1,
-                  text: trimmedSentence,
-                }
-              : null;
-          })
-          .filter((sentence) => sentence !== null) as {
-          id: number;
-          text: string;
-        }[];
+        const sentencesArray = content.split("\n");
 
-        form.setValue(
-          "utterances",
-          sentencesArray
-            .map((sentence) => {
-              return sentence?.text;
-            })
-            .join("|")
-        );
-        setTableData(sentencesArray);
+        form.setValue("utterances", sentencesArray.join("|"));
+
+        resetUtteranceSet(sentencesArray);
       } catch (error) {
         console.error("Error reading the file:", error);
       }
+    }
+  };
+
+  const handleAddRow = () => {
+    if (newUtterance.length > 0 && newUtterance.trim()) {
+      addUtterance(newUtterance);
+      setNewUtterance("");
+      // setTableData(utteranceSets);
     }
   };
 
@@ -192,10 +187,6 @@ export const CreateForm: React.FC<CreateFormProps> = ({ languages }) => {
                         key={language.id}
                         value={language.id.toString()}
                       >
-                        {/* <ReactCountryFlag
-                          countryCode={language.country_code}
-                          svg
-                        /> */}
                         {` ${language.lang_name} (${language.country_name})`}
                       </SelectItem>
                     );
@@ -256,29 +247,64 @@ export const CreateForm: React.FC<CreateFormProps> = ({ languages }) => {
                   .
                 </AlertDescription>
               </Alert>
-              <Button type="button" variant="outline" className="w-full p-0">
-                <label
-                  htmlFor="txt"
-                  className="w-full h-full cursor-pointer flex gap-2 justify-center items-center text-sm"
-                >
-                  <Upload className="w-4 h-4" />
-                  Upload .txt file
-                </label>
-                <input
-                  id="txt"
-                  type="file"
-                  accept=".txt"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </Button>
+              <div className="flex gap-4">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" type="button">
+                      <PlusCircle className="font-light mr-2 w-4 h-4 text-muted-foreground" />
+                      Add row
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>
+                        Insert a new utterance to the set
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="flex gap-4">
+                        {/* <Label htmlFor="utterance" className="text-left">
+                        Utterance
+                      </Label> */}
+                        <Input
+                          id="utterance"
+                          value={newUtterance}
+                          onChange={(e) => setNewUtterance(e.target.value)}
+                          placeholder="I'm cooking a fried rice."
+                          className="col-span-3"
+                        />
+
+                        <DialogClose asChild>
+                          <Button onClick={handleAddRow}>Add</Button>
+                        </DialogClose>
+                      </div>
+                    </div>
+                    <DialogFooter></DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                <Button type="button" variant="outline" className="w-full p-0">
+                  <label
+                    htmlFor="txt"
+                    className="w-full h-full cursor-pointer flex gap-2 justify-center items-center text-sm"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Upload .txt file
+                  </label>
+                  <input
+                    id="txt"
+                    type="file"
+                    accept=".txt"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </Button>
+              </div>
 
               <FormControl>
                 <Input type="text" className="hidden" {...field} />
               </FormControl>
               <FormMessage />
-              <DataTable columns={columns} data={tableData || []} />
-              {/* <Button onClick={handleAddRow}>Add row</Button> */}
+              <DataTable columns={columns} data={utteranceSets || []} />
             </FormItem>
           )}
         />
