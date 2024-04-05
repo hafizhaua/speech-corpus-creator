@@ -18,12 +18,14 @@ interface RecordingStudioProps {
   configData: ConfigDataType;
   utterances: UtteranceType[];
   onRecordingComplete: (blobs: RecordingDataType[]) => void;
+  langCode: string;
 }
 
 export default function RecordingStudio({
   utterances,
   configData,
   onRecordingComplete,
+  langCode,
 }: RecordingStudioProps) {
   const wavesurferRef = useRef<HTMLDivElement>(null);
 
@@ -82,7 +84,7 @@ export default function RecordingStudio({
         const SpeechRecognition =
           window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
-        recognition.lang = "en-US";
+        recognition.lang = langCode || "en";
         recognition.onresult = async (event) => {
           const text = event?.results[0][0].transcript;
           assessSimilarity(text, utterances[currIdx].text);
@@ -101,7 +103,7 @@ export default function RecordingStudio({
         const SpeechRecognition =
           window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
-        recognition.lang = "en-US";
+        recognition.lang = langCode || "en";
         recognition.onresult = async (event) => {
           const text = event?.results[0][0].transcript;
           assessSimilarity(text, utterances[currIdx].text);

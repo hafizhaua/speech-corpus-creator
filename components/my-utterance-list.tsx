@@ -29,7 +29,7 @@ import { useRouter } from "next/navigation";
 interface UtteranceListProps {
   id: string;
   title: string;
-  langCode: string;
+  countryCode: string;
   lang: string;
   href?: string;
 }
@@ -38,7 +38,7 @@ export const MyUtteranceList: React.FC<UtteranceListProps> = ({
   id,
   title,
   lang,
-  langCode,
+  countryCode,
   href,
 }) => {
   const router = useRouter();
@@ -65,9 +65,9 @@ export const MyUtteranceList: React.FC<UtteranceListProps> = ({
             {title}
           </h2>
           <div className="flex items-center gap-2">
-            <ReactCountryFlag countryCode={langCode} />
+            <ReactCountryFlag countryCode={countryCode} svg />
             <span className="truncate text-primary/50 group-hover:text-primary/75 transition text-sm">
-              {lang}
+              {lang} ({countryCode})
             </span>
           </div>
         </div>

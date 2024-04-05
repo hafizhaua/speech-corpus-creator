@@ -6,8 +6,14 @@ import RecordingStudio from "./recording-studio";
 import ConfigForm from "./config-form";
 import ExportForm from "./export-form";
 
-export const Session = ({ utterances }: { utterances: UtteranceType[] }) => {
-  const [currentStep, setCurrentStep] = useState(3);
+export const Session = ({
+  utterances,
+  langCode,
+}: {
+  utterances: UtteranceType[];
+  langCode: string;
+}) => {
+  const [currentStep, setCurrentStep] = useState(1);
   const [configData, setConfigData] = useState<ConfigDataType | null>(null);
   const [audioData, setAudioData] = useState<RecordingDataType[]>([]);
 
@@ -32,6 +38,7 @@ export const Session = ({ utterances }: { utterances: UtteranceType[] }) => {
       {currentStep === 1 && <ConfigForm onSubmit={handleConfigSubmit} />}
       {currentStep === 2 && configData && (
         <RecordingStudio
+          langCode={langCode}
           configData={configData}
           utterances={utterances}
           onRecordingComplete={handleRecordingComplete}

@@ -13,7 +13,7 @@ interface SetType {
   title: string;
   description: string;
   languages: {
-    name: string;
+    lang_name: string;
   };
   utterances: string;
   is_visible: boolean;
@@ -25,9 +25,11 @@ const getUtteranceSet = async (id: string) => {
 
   const { data, error } = await supabase
     .from("utterance_sets")
-    .select("id, title, description, languages (name), utterances, user_id")
+    .select(
+      "id, title, description, languages (lang_name), utterances, user_id"
+    )
     .eq("id", id)
-    // .returns<SetType>()
+    .returns<SetType[]>()
     .single();
 
   const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -51,7 +53,7 @@ export default async function Utterance({
       <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-8">
         <Header title={data?.title} description={data?.description} />
         <SetMetadata
-          language={data?.languages.name}
+          language={data?.languages?.lang_name}
           utterances={data?.utterances}
         />
         <UtteranceList utterancesString={data?.utterances || ""} />
@@ -84,11 +86,5 @@ const Header = ({
       <h1 className="text-2xl font-bold mb-2">{title}</h1>
       <p className="text-muted-foreground">{description}</p>
     </div>
-  );
-};
-
-const OverviewSkeleton = () => {
-  return (
-    <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-8"></div>
   );
 };

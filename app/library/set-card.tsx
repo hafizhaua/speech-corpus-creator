@@ -6,12 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import ReactCountryFlag from "react-country-flag";
 
 interface SetCardProps {
   id: string;
   title: string;
   language: string;
   author?: string;
+  countryCode?: string;
 }
 
 export const SetCard: React.FC<SetCardProps> = ({
@@ -19,6 +21,7 @@ export const SetCard: React.FC<SetCardProps> = ({
   title,
   language,
   author,
+  countryCode,
 }) => {
   return (
     <Link href={"/library/" + id}>
@@ -27,7 +30,9 @@ export const SetCard: React.FC<SetCardProps> = ({
           <CardTitle className="">
             <p className="text-lg font-bold">{title}</p>
           </CardTitle>
-          <CardDescription>{language}</CardDescription>
+          <CardDescription className="flex gap-2 items-center">
+            <ReactCountryFlag countryCode={countryCode || ""} svg /> {language}
+          </CardDescription>
         </CardHeader>
 
         {author && (

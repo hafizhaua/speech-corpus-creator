@@ -52,7 +52,10 @@ const formSchema = z.object({
 
 type LanguagesType = {
   id: string;
-  name: string;
+  lang_name: string;
+  country_name: string;
+  lang_code: string;
+  country_code: string;
 };
 
 type UtterancesType = {
@@ -210,7 +213,7 @@ export const EditForm: React.FC<CreateFormProps> = ({
                         key={language.id}
                         value={language.id.toString()}
                       >
-                        {language.name}
+                        {` ${language.lang_name} (${language.country_name})`}
                       </SelectItem>
                     );
                   })}

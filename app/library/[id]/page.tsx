@@ -10,7 +10,8 @@ interface SetType {
   title: string;
   description: string;
   languages: {
-    name: string;
+    lang_name: string;
+    country_name: string;
   };
   utterances: string;
   is_visible: boolean;
@@ -22,7 +23,9 @@ const getUtteranceSet = async (id: string) => {
 
   const { data, error } = await supabase
     .from("utterance_sets")
-    .select("id, title, description, languages (name), utterances, user_id")
+    .select(
+      "id, title, description, languages (lang_name, country_code), utterances, user_id"
+    )
     .eq("id", id)
     .single();
 
@@ -47,7 +50,7 @@ export default async function DetailSet({
     <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-8">
       <Header title={data?.title} description={data?.description} />
       <SetMetadata
-        language={data?.languages.name}
+        language={`${data?.languages?.lang_name} (${data?.languages?.country_code})`}
         utterances={data?.utterances}
       />
       <UtteranceList utterancesString={data?.utterances || ""} />

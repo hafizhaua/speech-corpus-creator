@@ -70,7 +70,7 @@ export default function ConfigForm({
   return (
     <div className="p-8 py-12 md:px-10 md:py-12 space-y-4">
       <h1 className="text-2xl font-bold">Audio Configuration Preference</h1>
-      <p>
+      <p className="text-muted-foreground">
         Before we start the recording session, please select your preference of
         the audio constraints.
       </p>

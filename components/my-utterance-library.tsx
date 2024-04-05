@@ -12,15 +12,14 @@ import { Button } from "./ui/button";
 import { MyUtteranceList } from "./my-utterance-list";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { set } from "react-hook-form";
-import { optional } from "zod";
 
 interface SetProps {
   id: number;
   title: string;
   languages: {
-    name: string;
-    alpha2: string;
+    lang_name: string;
+    country_name: string;
+    country_code: string;
   };
 }
 
@@ -32,15 +31,15 @@ export const MyUtteranceLibrary = async () => {
 
   const { data: setData, error } = await supabase
     .from("utterance_sets")
-    .select("id, title, languages ( name, alpha2 )")
-    .eq("user_id", sessionData.session?.user.id)
+    .select("id, title, languages ( lang_name, country_name, country_code )")
+    .eq("user_id", sessionData.session?.user.id || "")
     .order("updated_at")
     .returns<SetProps[]>();
 
   return (
     <Card className="flex flex-col w-full h-full overflow-x-hidden">
       <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2 text-primary/75 font-bold">
+        <CardTitle className="text-base flex items-center gap-2 text-muted-foreground font-bold">
           <List />
           <p className="truncate">My Utterance Sets</p>
         </CardTitle>
@@ -52,11 +51,11 @@ export const MyUtteranceLibrary = async () => {
             setData?.map((d) => {
               return (
                 <MyUtteranceList
-                  id={d.id}
+                  id={d.id.toString()}
                   key={d.id}
                   title={d.title}
-                  langCode={d.languages.alpha2}
-                  lang={d.languages.name}
+                  countryCode={d.languages.country_code}
+                  lang={`${d.languages.lang_name}`}
                 />
               );
             })
@@ -77,10 +76,12 @@ export const MyUtteranceLibrary = async () => {
       </ScrollArea>
       <CardFooter className="flex flex-col gap-2 pt-2">
         <Link href={"/utterance/create"} className="w-full">
-          <Button className="w-full">Create New Set</Button>
+          <Button className="w-full" variant="default">
+            Create New Set
+          </Button>
         </Link>
         <Link href={"/library"} className="w-full">
-          <Button className="w-full" variant={"secondary"}>
+          <Button className="w-full" variant={"outline"}>
             Browse Library
           </Button>
         </Link>

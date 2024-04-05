@@ -16,23 +16,25 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import useDebounce from "@/lib/hooks/useDebounce";
 
-interface SetListProps {
-  languages: {
-    id: string;
-    name: string;
-  }[];
-}
+type LanguageType = {
+  id: string;
+  lang_name: string;
+  country_name?: string;
+  country_code?: string;
+};
 
 interface SetProps {
   id: string;
   title: string;
   languages: {
-    name: string;
+    lang_name: string;
+    country_name: string;
+    country_code: string;
   };
   created_by: string;
 }
 
-export const SetList: React.FC<SetListProps> = ({ languages }) => {
+export const SetList = ({ languages }: { languages: LanguageType[] }) => {
   const [selectedLanguage, setSelectedLanguage] = useState<string>("all");
   const [searchName, setSearchName] = useState<string>("");
   const [data, setData] = useState<SetProps[]>([]);
@@ -45,7 +47,9 @@ export const SetList: React.FC<SetListProps> = ({ languages }) => {
     if (selectedLanguage === "all") {
       const { data, error } = await supabase
         .from("utterance_sets")
-        .select("id, title, languages (name), created_by")
+        .select(
+          "id, title, languages (lang_name, country_name, country_code), created_by"
+        )
         .ilike("title", `%${searchName}%`)
         .eq("is_visible", true)
         .returns<SetProps[]>();
@@ -54,7 +58,9 @@ export const SetList: React.FC<SetListProps> = ({ languages }) => {
     } else if (selectedLanguage.length > 0) {
       const { data, error } = await supabase
         .from("utterance_sets")
-        .select("id, title, languages (name), created_by")
+        .select(
+          "id, title, languages (lang_name, country_name, country_code), created_by"
+        )
         .ilike("title", `%${searchName}%`)
         .eq("language_id", selectedLanguage)
         .eq("is_visible", true)
@@ -89,7 +95,8 @@ export const SetList: React.FC<SetListProps> = ({ languages }) => {
               {languages.map((language) => {
                 return (
                   <SelectItem key={language.id} value={language.id}>
-                    {language.name}
+                    {language.lang_name}{" "}
+                    {language.country_name && `(${language.country_name})`}
                   </SelectItem>
                 );
               })}
@@ -105,7 +112,8 @@ export const SetList: React.FC<SetListProps> = ({ languages }) => {
                 key={d.title}
                 id={d.id}
                 title={d.title}
-                language={d.languages?.name}
+                language={`${d.languages?.lang_name} (${d.languages.country_code})`}
+                countryCode={d.languages.country_code}
                 author={d.created_by}
               />
             );

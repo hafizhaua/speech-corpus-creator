@@ -41,6 +41,7 @@ import { columns } from "./columns";
 import { createUtteranceSet } from "./actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+// import ReactCountryFlag from "react-country-flag";
 
 const formSchema = z.object({
   title: z.string().trim().min(1).max(30),
@@ -52,7 +53,10 @@ const formSchema = z.object({
 
 type LanguagesType = {
   id: string;
-  name: string;
+  lang_name: string;
+  country_name: string;
+  lang_code: string;
+  country_code: string;
 };
 
 type UtterancesType = {
@@ -188,7 +192,11 @@ export const CreateForm: React.FC<CreateFormProps> = ({ languages }) => {
                         key={language.id}
                         value={language.id.toString()}
                       >
-                        {language.name}
+                        {/* <ReactCountryFlag
+                          countryCode={language.country_code}
+                          svg
+                        /> */}
+                        {` ${language.lang_name} (${language.country_name})`}
                       </SelectItem>
                     );
                   })}
