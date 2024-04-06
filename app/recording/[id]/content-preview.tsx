@@ -1,4 +1,3 @@
-import { Utterance } from "@/app/utterance/create/columns";
 import { ExportFormType, UtteranceType } from "./types";
 import { padWithLeadingZeros } from "./utils";
 
@@ -12,7 +11,7 @@ export const TranscriptContent = ({
   formValue: ExportFormType;
 }) => {
   const renderItems = () => {
-    const items = [];
+    const items: React.JSX.Element[] = [];
 
     for (let i = 0; i < utterances.length; i++) {
       let key: string = utterances[i].id.toString();

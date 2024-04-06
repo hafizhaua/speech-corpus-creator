@@ -41,36 +41,35 @@ export const SetList = ({ languages }: { languages: LanguageType[] }) => {
 
   const debouncedSearch = useDebounce(searchName, 500);
 
-  const fetchData = async () => {
-    const supabase = createClient();
-
-    if (selectedLanguage === "all") {
-      const { data, error } = await supabase
-        .from("utterance_sets")
-        .select(
-          "id, title, languages (lang_name, country_name, country_code), created_by"
-        )
-        .ilike("title", `%${searchName}%`)
-        .eq("is_visible", true)
-        .returns<SetProps[]>();
-
-      if (!error) setData(data);
-    } else if (selectedLanguage.length > 0) {
-      const { data, error } = await supabase
-        .from("utterance_sets")
-        .select(
-          "id, title, languages (lang_name, country_name, country_code), created_by"
-        )
-        .ilike("title", `%${searchName}%`)
-        .eq("language_id", selectedLanguage)
-        .eq("is_visible", true)
-        .returns<SetProps[]>();
-
-      if (!error) setData(data);
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      const supabase = createClient();
+
+      if (selectedLanguage === "all") {
+        const { data, error } = await supabase
+          .from("utterance_sets")
+          .select(
+            "id, title, languages (lang_name, country_name, country_code), created_by"
+          )
+          .ilike("title", `%${debouncedSearch}%`)
+          .eq("is_visible", true)
+          .returns<SetProps[]>();
+
+        if (!error) setData(data);
+      } else if (selectedLanguage.length > 0) {
+        const { data, error } = await supabase
+          .from("utterance_sets")
+          .select(
+            "id, title, languages (lang_name, country_name, country_code), created_by"
+          )
+          .ilike("title", `%${debouncedSearch}%`)
+          .eq("language_id", selectedLanguage)
+          .eq("is_visible", true)
+          .returns<SetProps[]>();
+
+        if (!error) setData(data);
+      }
+    };
     fetchData();
   }, [debouncedSearch, selectedLanguage]);
 

@@ -21,13 +21,14 @@ export interface File {
   id: string;
   name: string;
   format: string;
-  type: "file"; // Corrected to specify type as 'file'
+  type: string; // Corrected to specify type as 'file'
 }
 
 export interface Folder {
   id: string;
   name: string;
-  type: "folder"; // Corrected to specify type as 'folder'
+  format: string;
+  type: string; // Corrected to specify type as 'folder'
   children?: FileSystemItem[]; // Recursive type definition
 }
 

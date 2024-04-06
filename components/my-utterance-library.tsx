@@ -65,7 +65,9 @@ export const MyUtteranceLibrary = async () => {
                 <PackageSearch className="w-20 h-20" />
               </div>
               <div className="space-y-1">
-                <h2 className="font-bold text-lg">You don't have any sets</h2>
+                <h2 className="font-bold text-lg">
+                  You don&apos;t have any sets
+                </h2>
                 <p className="text-sm">
                   Browse publicly available sets or create your own set.
                 </p>

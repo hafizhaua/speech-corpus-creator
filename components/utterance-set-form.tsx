@@ -143,7 +143,7 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
         btnRef.current.click();
       }
     },
-    [newUtterance]
+    []
   );
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,7 +165,7 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
 
   useEffect(() => {
     form.setValue("utterances", utteranceSets.map((u) => u.text).join("|"));
-  }, [utteranceSets]);
+  }, [form, utteranceSets]);
 
   useEffect(() => {
     resetUtteranceSet([]);
@@ -173,7 +173,7 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
       const utterancesArray = initialValue.utterances.split("|");
       utterancesArray.map((u) => addUtterance(u));
     }
-  }, [initialValue]);
+  }, [initialValue, addUtterance, resetUtteranceSet]);
 
   const handleAddRow = () => {
     if (newUtterance.length > 0 && newUtterance.trim()) {
@@ -283,7 +283,7 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
                             Parks provided an oasis in the heart of the city.{" "}
                             <br />
                             Public transportation connected every corner. <br />
-                            The city never sleeps; it's alive 24/7. <br />
+                            The city never sleeps; it&apos;s alive 24/7. <br />
                             Cultural diversity thrived in every neighborhood.
                           </code>
                         </div>

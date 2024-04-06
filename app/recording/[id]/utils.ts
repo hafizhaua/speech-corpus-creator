@@ -29,6 +29,7 @@ export const createFolder = (name: string): Folder => {
   return {
     id: Math.random().toString(36).substring(2, 9), // Generate a random ID
     name,
+    format: "",
     type: "folder",
     children: [],
   };
@@ -78,7 +79,7 @@ export const createFileArray = (
   format: string,
   limit = -1
 ) => {
-  const fileArray = [];
+  const fileArray: FileSystemItem[] = [];
   for (let i = 1; i <= count; i++) {
     if (i > limit && i < count - limit && count > 10) {
       const file = {
@@ -110,7 +111,7 @@ export const createFileArray = (
     }
   }
 
-  return fileArray as FileSystemItem[];
+  return fileArray;
 };
 
 export const padWithLeadingZeros = (maxValue: number, n: number): string => {

@@ -30,7 +30,7 @@ export const columns: ColumnDef<Utterance>[] = [
   {
     header: "Action",
     id: "actions",
-    cell: ({ row, table }) => {
+    cell: function Cell({ row, table }) {
       const { deleteUtterance, updateUtterance, addUtterance } =
         useUtteranceSetStore();
       const editRef = useRef<HTMLButtonElement>(null);
@@ -49,7 +49,7 @@ export const columns: ColumnDef<Utterance>[] = [
             editRef.current.click();
           }
         },
-        [editedUtterance]
+        []
       );
 
       const handleKeyDownAdd = useCallback(
@@ -58,7 +58,7 @@ export const columns: ColumnDef<Utterance>[] = [
             addRef.current.click();
           }
         },
-        [newUtterance]
+        []
       );
       return (
         <div className="flex gap-8 relative">

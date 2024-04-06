@@ -19,6 +19,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
         : "sample.zip"
     }`,
     type: "folder",
+    format: "",
     children: [],
   };
 

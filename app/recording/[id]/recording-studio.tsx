@@ -142,11 +142,9 @@ export default function RecordingStudio({
   };
 
   // Function to upsert recording data based on idx
-  const upsertRecordingData = (
-    idx: number,
-    utterance: UtteranceType,
-    audioBlob: Blob
-  ) => {
+  const upsertRecordingData = (audioBlob: Blob) => {
+    const idx = currIdx;
+    const utterance = utterances[idx];
     setRecordingData((prevData) => {
       const existingIndex = prevData.findIndex((data) => data.idx === idx);
       if (existingIndex !== -1) {
@@ -159,6 +157,7 @@ export default function RecordingStudio({
         return [...prevData, { idx, utterance, audioBlob }];
       }
     });
+    toast.info("Recording saved");
   };
 
   const handleFinish = () => {
@@ -170,14 +169,10 @@ export default function RecordingStudio({
 
     setShowResult(true);
     wavesurfer?.loadBlob(recordingBlob);
-    downloadBlob(recordingBlob);
-
-    upsertRecordingData(currIdx, utterances[currIdx], recordingBlob);
-
-    toast.success(`Utterance ${currIdx + 1} saved.`);
-
+    // downloadBlob(recordingBlob);
+    upsertRecordingData(recordingBlob);
     // recordingBlob will be present at this point after 'stopRecording' has been called
-  }, [recordingBlob]);
+  }, [recordingBlob, wavesurfer]);
 
   return (
     <div className="px-12 py-16 min-h-screen flex flex-col gap-12 items-center">
