@@ -1,8 +1,7 @@
-import SetForm from "@/components/set-form";
 import { createClient } from "@/lib/supabase/server";
 import React from "react";
-import { EditForm } from "./edit-form";
 import { getLanguages } from "@/lib/actions/languages";
+import { UtteranceSetForm } from "@/components/utterance-set-form";
 
 type SetType = {
   title: string;
@@ -36,8 +35,7 @@ export default async function EditSet({
   return (
     <div className="p-8 py-12 md:px-10 md:py-12 space-y-4">
       <h1 className="text-2xl font-bold">Edit Utterance Set</h1>
-
-      <EditForm languages={languages} initialValue={data} />
+      <UtteranceSetForm languages={languages} initialValue={data} />
     </div>
   );
 }

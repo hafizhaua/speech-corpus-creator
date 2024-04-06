@@ -47,8 +47,6 @@ export default function ConfigForm({
     },
   });
 
-  console.log(navigator.mediaDevices.getSupportedConstraints());
-
   const fileFormatOption = [".wav", ".mp3", ".webm"];
   const sampleRateOption = [
     8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000, 88200, 96000,

@@ -3,14 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Plus, Trash } from "lucide-react";
-
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
 import {
   Dialog,
   DialogClose,
@@ -21,12 +13,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import useUtteranceSetStore from "./store";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import useUtteranceSetStore from "@/lib/hooks/useUtteranceSetStore";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
 export type Utterance = {
   id: string;
   text: string;
@@ -43,23 +33,38 @@ export const columns: ColumnDef<Utterance>[] = [
     cell: ({ row, table }) => {
       const { deleteUtterance, updateUtterance, addUtterance } =
         useUtteranceSetStore();
+      const editRef = useRef<HTMLButtonElement>(null);
+      const addRef = useRef<HTMLButtonElement>(null);
+
       const [newUtterance, setNewUtterance] = useState("");
       const [editedUtterance, setEditedUtterance] = useState(row.original.text);
+
       const isLastRow =
         table.getRowModel().rows.length - 1 ===
         table.getRowModel().rows.indexOf(row);
 
-      console.log();
+      const handleKeyDownEdit = useCallback(
+        (event: React.KeyboardEvent<HTMLInputElement>) => {
+          if (event.key === "Enter" && editRef.current) {
+            editRef.current.click();
+          }
+        },
+        [editedUtterance]
+      );
+
+      const handleKeyDownAdd = useCallback(
+        (event: React.KeyboardEvent<HTMLInputElement>) => {
+          if (event.key === "Enter" && addRef.current) {
+            addRef.current.click();
+          }
+        },
+        [newUtterance]
+      );
       return (
         <div className="flex gap-8 relative">
-          {/* <span className="text-yellow-500">Edit</span> */}
           <div className="space-x-2">
             <Dialog>
               <DialogTrigger asChild>
-                {/* <Button variant="outline" type="button">
-                  Edit
-                </Button> */}
-
                 <Button
                   variant="outline"
                   size="icon"
@@ -75,18 +80,17 @@ export const columns: ColumnDef<Utterance>[] = [
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="flex gap-4">
-                    {/* <Label htmlFor="utterance" className="text-left">
-                        Utterance
-                      </Label> */}
                     <Input
                       id="utterance"
                       value={editedUtterance}
+                      onKeyDown={handleKeyDownEdit}
                       onChange={(e) => setEditedUtterance(e.target.value)}
                       placeholder="I'm cooking a fried rice."
                     />
 
                     <DialogClose asChild>
                       <Button
+                        ref={editRef}
                         onClick={() =>
                           updateUtterance(editedUtterance, row.original.id)
                         }
@@ -99,14 +103,6 @@ export const columns: ColumnDef<Utterance>[] = [
                 <DialogFooter></DialogFooter>
               </DialogContent>
             </Dialog>
-
-            {/* <Button
-              type="button"
-              variant="outline"
-              onClick={() => deleteUtterance(row.original.id)}
-            >
-              Delete
-            </Button> */}
             <Button
               variant="outline"
               size="icon"
@@ -121,9 +117,6 @@ export const columns: ColumnDef<Utterance>[] = [
           {!isLastRow && (
             <Dialog>
               <DialogTrigger asChild>
-                {/* <Button variant="outline" type="button">
-                Add new below
-              </Button> */}
                 <Button
                   variant="outline"
                   size="icon"
@@ -138,18 +131,17 @@ export const columns: ColumnDef<Utterance>[] = [
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="flex gap-4">
-                    {/* <Label htmlFor="utterance" className="text-left">
-                        Utterance
-                      </Label> */}
                     <Input
                       id="utterance"
                       value={newUtterance}
                       onChange={(e) => setNewUtterance(e.target.value)}
+                      onKeyDown={handleKeyDownAdd}
                       placeholder="I'm cooking a fried rice."
                     />
 
                     <DialogClose asChild>
                       <Button
+                        ref={addRef}
                         onClick={() =>
                           addUtterance(newUtterance, row.original.id)
                         }

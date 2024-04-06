@@ -1,7 +1,5 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -25,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -34,83 +33,118 @@ import {
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
-import { Lightbulb, Upload } from "lucide-react";
-import { Utterance, columns } from "../app/utterance/create/columns";
-import { DataTable } from "./data-table";
+import { Lightbulb, PlusCircle, Upload } from "lucide-react";
+
 import { Switch } from "@/components/ui/switch";
 import { readFileAsync } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { DataTable } from "@/components/data-table";
+
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import useUtteranceSetStore from "@/lib/hooks/useUtteranceSetStore";
+import { columns } from "./columns/utterances-column";
+import {
+  createUtteranceSet,
+  updateUtteranceSet,
+} from "@/lib/actions/utterance-set";
 
 const formSchema = z.object({
-  title: z.string(),
-  description: z.string(),
+  title: z.string().trim().min(1).max(30),
+  description: z.string().trim().min(1).max(100),
   language_id: z.string(),
   utterances: z.string(),
   is_visible: z.boolean(),
 });
 
-interface SetFormProps {
+type LanguagesType = {
+  id: string;
+  lang_name: string;
+  country_name: string;
+  lang_code: string;
+  country_code: string;
+};
+
+type UtterancesType = {
+  id: string;
+  text: string;
+};
+
+interface CreateFormProps {
+  languages: LanguagesType[];
   initialValue?: {
+    id: string;
     title: string;
     description: string;
     language_id: string;
     utterances: string;
     is_visible: boolean;
-  };
+  } | null;
 }
 
-type UtterancesType = {
-  id: string | number;
-  text: string;
-};
+export const UtteranceSetForm: React.FC<CreateFormProps> = ({
+  languages,
+  initialValue,
+}) => {
+  const [newUtterance, setNewUtterance] = useState("");
 
-type LanguagesType = {
-  id: string | number;
-  name: string;
-};
+  const { utteranceSets, addUtterance, resetUtteranceSet } =
+    useUtteranceSetStore();
 
-const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
-  const [tableData, setTableData] = useState<UtterancesType[]>([]);
-  const [languages, setLanguages] = useState<LanguagesType[]>([]);
+  const btnRef = useRef<HTMLButtonElement>(null);
+
   const router = useRouter();
-  // 1. Define your form.
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: initialValue?.title || "",
       description: initialValue?.description || "",
-      language_id: initialValue?.language_id || 0,
+      language_id: initialValue?.language_id || "",
       utterances: initialValue?.utterances || "",
       is_visible: initialValue?.is_visible || false,
     },
   });
+  const isEditMode = !!initialValue;
 
-  useEffect(() => {
-    if (initialValue && initialValue.utterances) {
-      const utterancesArray = initialValue.utterances.split("|");
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    let response;
 
-      const parsedData = utterancesArray.map((text, index) => ({
-        id: index + 1,
-        text: text.trim(), // Trim to remove any leading or trailing spaces
-      }));
+    try {
+      if (isEditMode && initialValue?.id) {
+        response = await updateUtteranceSet(values, initialValue.id);
+      } else {
+        response = await createUtteranceSet(values);
+      }
 
-      setTableData(parsedData);
+      if (response?.error) {
+        console.log(response.error);
+        toast.error(response.error?.message);
+      } else {
+        toast.success(
+          `The set has been ${isEditMode ? "edited" : "created"} successfully`
+        );
+        const createdOrUpdatedId = response.data[0]?.id;
+        if (createdOrUpdatedId) {
+          router.push(`/utterance/${createdOrUpdatedId}`);
+        } else {
+          router.push("/");
+        }
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("An unexpected error occurred. Please try again.");
     }
-  }, [initialValue]);
+  }
 
-  useEffect(() => {
-    const getLangs = async () => {
-      const supabase = createClient();
-      const { data: langData, error } = await supabase
-        .from("languages")
-        .select("id, name");
-
-      if (!error) setLanguages(langData);
-    };
-
-    getLangs();
-  }, []);
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === "Enter" && btnRef.current) {
+        btnRef.current.click();
+      }
+    },
+    [newUtterance]
+  );
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -118,59 +152,35 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
     if (file) {
       try {
         const content = await readFileAsync(file);
-        const sentencesArray = content
-          .split("\n")
-          .map((sentence, index) => {
-            const trimmedSentence = sentence.trim();
-            return trimmedSentence !== ""
-              ? {
-                  id: index + 1,
-                  text: trimmedSentence,
-                }
-              : null;
-          })
-          .filter((sentence) => sentence !== null) as {
-          id: number;
-          text: string;
-        }[];
+        const sentencesArray = content.split("\n");
 
-        form.setValue(
-          "utterances",
-          sentencesArray
-            .map((sentence) => {
-              return sentence?.text;
-            })
-            .join("|")
-        );
-        setTableData(sentencesArray);
+        form.setValue("utterances", sentencesArray.join("|"));
+
+        resetUtteranceSet(sentencesArray);
       } catch (error) {
         console.error("Error reading the file:", error);
       }
     }
   };
 
-  const handleAddRow = () => {
-    const newRow = {
-      id: tableData.length + 1,
-      text: "",
-    };
-    setTableData([...tableData, newRow]);
-  };
+  useEffect(() => {
+    form.setValue("utterances", utteranceSets.map((u) => u.text).join("|"));
+  }, [utteranceSets]);
 
-  // 2. Define a submit handler.
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    const supabase = createClient();
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-
-    const { data, error } = await supabase
-      .from("utterance_sets")
-      .insert({ user_id: userData.user?.id, ...values });
-
-    if (!error) {
-      router.refresh();
-      router.push("/");
+  useEffect(() => {
+    resetUtteranceSet([]);
+    if (initialValue && initialValue.utterances) {
+      const utterancesArray = initialValue.utterances.split("|");
+      utterancesArray.map((u) => addUtterance(u));
     }
-  }
+  }, [initialValue]);
+
+  const handleAddRow = () => {
+    if (newUtterance.length > 0 && newUtterance.trim()) {
+      addUtterance(newUtterance);
+      setNewUtterance("");
+    }
+  };
 
   return (
     <Form {...form}>
@@ -223,13 +233,10 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
                         key={language.id}
                         value={language.id.toString()}
                       >
-                        {language.name}
+                        {` ${language.lang_name} (${language.country_name})`}
                       </SelectItem>
                     );
                   })}
-                  {/* <SelectItem value={field}>Indonesian</SelectItem>
-                  <SelectItem value="IND">Indian</SelectItem>
-                  <SelectItem value="ENG">English</SelectItem> */}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -286,29 +293,67 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
                   .
                 </AlertDescription>
               </Alert>
-              <Button type="button" variant="outline" className="w-full p-0">
-                <label
-                  htmlFor="txt"
-                  className="w-full h-full cursor-pointer flex gap-2 justify-center items-center text-sm"
-                >
-                  <Upload className="w-4 h-4" />
-                  Upload .txt file
-                </label>
-                <input
-                  id="txt"
-                  type="file"
-                  accept=".txt"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </Button>
+              <div className="flex gap-4">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" type="button">
+                      <PlusCircle className="font-light mr-2 w-4 h-4 text-muted-foreground" />
+                      Add row
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>
+                        Insert a new utterance to the set
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="flex gap-4">
+                        {/* <Label htmlFor="utterance" className="text-left">
+                        Utterance
+                      </Label> */}
+                        <Input
+                          id="utterance"
+                          value={newUtterance}
+                          onChange={(e) => setNewUtterance(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          placeholder="I'm cooking a fried rice."
+                          className="col-span-3"
+                        />
+
+                        <DialogClose asChild>
+                          <Button onClick={handleAddRow} ref={btnRef}>
+                            Add
+                          </Button>
+                        </DialogClose>
+                      </div>
+                    </div>
+                    <DialogFooter></DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                <Button type="button" variant="outline" className="w-full p-0">
+                  <label
+                    htmlFor="txt"
+                    className="w-full h-full cursor-pointer flex gap-2 justify-center items-center text-sm"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Upload .txt file
+                  </label>
+                  <input
+                    id="txt"
+                    type="file"
+                    accept=".txt"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </Button>
+              </div>
 
               <FormControl>
                 <Input type="text" className="hidden" {...field} />
               </FormControl>
               <FormMessage />
-              {/* <Button onClick={handleAddRow}>Add row</Button> */}
-              <DataTable columns={columns} data={tableData || []} />
+              <DataTable columns={columns} data={utteranceSets || []} />
             </FormItem>
           )}
         />
@@ -341,5 +386,3 @@ const SetForm: React.FC<SetFormProps> = ({ initialValue }) => {
     </Form>
   );
 };
-
-export default SetForm;

@@ -11,6 +11,19 @@ type FormType = {
   is_visible: boolean;
 };
 
+export const updateUtteranceSet = async (body: FormType, id: string) => {
+  const supabase = createClient();
+
+  const response = await supabase
+    .from("utterance_sets")
+    .update(body)
+    .eq("id", id)
+    .select();
+
+  revalidatePath("/");
+  return response;
+};
+
 export const createUtteranceSet = async (body: FormType) => {
   const supabase = createClient();
 

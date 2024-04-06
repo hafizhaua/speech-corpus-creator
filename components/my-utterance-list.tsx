@@ -21,7 +21,6 @@ import { Button } from "./ui/button";
 import { MoreHorizontal } from "lucide-react";
 import ReactCountryFlag from "react-country-flag";
 import Link from "next/link";
-import DeleteAlert from "./delete-alert";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -52,6 +51,7 @@ export const MyUtteranceList: React.FC<UtteranceListProps> = ({
 
     if (!error) {
       toast.success("Your set has been deleted successfully");
+
       router.refresh();
     } else {
       toast.error("Something wrong");
