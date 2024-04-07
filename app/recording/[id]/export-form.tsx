@@ -32,8 +32,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { FileTree } from "./file-tree";
-import { ExportFormType, UtteranceType } from "./types";
+import { ExportFormType, RecordingDataType, UtteranceType } from "./types";
 import { TranscriptContent } from "./content-preview";
+
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 const formSchema = z.object({
   preset: z.string().optional(),
@@ -51,8 +54,10 @@ const formSchema = z.object({
 
 export default function ExportForm({
   utterances,
+  audioData,
 }: {
   utterances: UtteranceType[];
+  audioData: RecordingDataType[];
 }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -74,6 +79,15 @@ export default function ExportForm({
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+    const zip = new JSZip();
+
+    audioData?.forEach((data) => {
+      zip.file(`${values.audioPath}/${data.idx}.webm`, data.audioBlob);
+    });
+
+    zip.generateAsync({ type: "blob" }).then((content) => {
+      saveAs(content, `${values.fileName}.zip`);
+    });
   }
 
   const handlePresetChange = (format: string) => {
@@ -106,6 +120,18 @@ export default function ExportForm({
         transcriptionDelimiter: "|",
       });
     }
+  };
+
+  const handleDownload = () => {
+    const zip = new JSZip();
+
+    audioData.forEach((data) => {
+      zip.file(`${data.idx}.webm`, data.audioBlob);
+    });
+
+    zip.generateAsync({ type: "blob" }).then((content) => {
+      saveAs(content, "recordings.zip");
+    });
   };
 
   return (

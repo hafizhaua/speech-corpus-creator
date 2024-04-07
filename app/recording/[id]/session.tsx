@@ -44,7 +44,9 @@ export const Session = ({
           onRecordingComplete={handleRecordingComplete}
         />
       )}
-      {currentStep === 3 && <ExportForm utterances={utterances} />}
+      {currentStep === 3 && (
+        <ExportForm utterances={utterances} audioData={audioData} />
+      )}
     </div>
   );
 };

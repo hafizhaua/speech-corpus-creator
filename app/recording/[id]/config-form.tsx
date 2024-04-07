@@ -61,7 +61,6 @@ export default function ConfigForm({
   ];
 
   function handleSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     onSubmit(values);
   }
 

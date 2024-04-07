@@ -61,8 +61,12 @@ export default function RecordingStudio({
   });
 
   const handleNext = () => {
-    setShowResult(false);
-    setCurrIdx((prev) => (prev < utterances.length - 1 ? prev + 1 : prev));
+    if (currIdx + 1 === utterances.length) {
+      onRecordingComplete(recordingData);
+    } else {
+      setShowResult(false);
+      setCurrIdx((prev) => (prev < utterances.length - 1 ? prev + 1 : prev));
+    }
   };
 
   const handlePrev = () => {
@@ -160,9 +164,7 @@ export default function RecordingStudio({
     toast.info("Recording saved");
   };
 
-  const handleFinish = () => {
-    onRecordingComplete(recordingData);
-  };
+  const handleFinish = () => {};
 
   useEffect(() => {
     if (!recordingBlob) return;
