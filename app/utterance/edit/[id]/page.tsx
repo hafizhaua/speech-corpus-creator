@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import React from "react";
+import React, { Suspense } from "react";
 import { getLanguages } from "@/lib/actions/languages";
 import { UtteranceSetForm } from "@/components/utterance-set-form";
+import { notFound } from "next/navigation";
+import EditSkeleton from "./loading";
 
 type SetType = {
   title: string;
@@ -31,11 +33,16 @@ export default async function EditSet({
   params: { id: string };
 }) {
   const data = await getUtteranceSet(id);
+
+  if (!data) notFound();
+
   const languages = await getLanguages();
   return (
-    <div className="p-8 py-12 md:px-10 md:py-12 space-y-4">
-      <h1 className="text-2xl font-bold">Edit Utterance Set</h1>
-      <UtteranceSetForm languages={languages} initialValue={data} />
-    </div>
+    <Suspense fallback={<EditSkeleton />}>
+      <div className="p-8 py-12 md:px-10 md:py-12 space-y-4">
+        <h1 className="text-2xl font-bold">Edit Utterance Set</h1>
+        <UtteranceSetForm languages={languages} initialValue={data} />
+      </div>
+    </Suspense>
   );
 }
