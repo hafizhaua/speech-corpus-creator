@@ -37,6 +37,7 @@ import { TranscriptContent } from "./content-preview";
 
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { generateAudioName, generateCSV, generateCSVBlob } from "./utils";
 
 const formSchema = z.object({
   preset: z.string().optional(),
@@ -77,17 +78,46 @@ export default function ExportForm({
 
   const formValue = form.watch();
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const csvData: any = [];
+
     const zip = new JSZip();
 
-    audioData?.forEach((data) => {
-      zip.file(`${values.audioPath}/${data.idx}.webm`, data.audioBlob);
+    audioData?.forEach((data, idx) => {
+      const fileName = generateAudioName(
+        values.audioPrefix,
+        values.audioSuffix,
+        values.audioNamePattern,
+        utterances[idx].id,
+        utterances.length,
+        idx + 1
+      );
+      csvData.push([fileName, utterances[idx].text]);
+      zip.file(
+        `${
+          values.audioPath !== "" ? values.audioPath + "/" : ""
+        }${fileName}.webm`,
+        data.audioBlob
+      );
     });
 
-    zip.generateAsync({ type: "blob" }).then((content) => {
-      saveAs(content, `${values.fileName}.zip`);
-    });
+    const csvBlob = await generateCSVBlob(
+      csvData,
+      values.transcriptionDelimiter
+    );
+
+    if (csvBlob) {
+      zip.file(
+        `${
+          values.transcriptionPath !== "" ? values.transcriptionPath + "/" : ""
+        }${values.transcriptionName}.csv`,
+        csvBlob
+      );
+    }
+
+    const content = await zip.generateAsync({ type: "blob" });
+
+    saveAs(content, `${values.fileName}.zip`);
   }
 
   const handlePresetChange = (format: string) => {
@@ -435,7 +465,7 @@ export default function ExportForm({
             </h2>
 
             <div className="flex gap-4">
-              <div className="space-y-4">
+              <div className="space-y-4 max-w-[50%]">
                 <h2 className="text-xs text-muted-foreground uppercase tracking-widest">
                   File Structure
                 </h2>

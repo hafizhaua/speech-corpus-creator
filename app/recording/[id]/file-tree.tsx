@@ -27,12 +27,12 @@ export const FileTree: React.FC<FileTreeProps> = ({
   const transcriptionPath = formValue.transcriptionPath || "/";
 
   const audioFiles = createFileArray(
-    utterances.length,
+    utterances,
     formValue.audioPrefix,
     formValue.audioNamePattern,
     formValue.audioSuffix,
     "wav",
-    2
+    3
   );
 
   rootFile = createFolderStructureFromPath(rootFile, audioPath, audioFiles);
@@ -61,7 +61,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
                     <FileAudio className="w-5 h-5" />
                   )
                 )}
-                <span className="">
+                <span className="truncate">
                   {item.name}.{item.format}
                 </span>
               </div>

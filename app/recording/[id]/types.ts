@@ -1,5 +1,5 @@
 export type UtteranceType = {
-  id: number;
+  id: string;
   text: string;
 };
 

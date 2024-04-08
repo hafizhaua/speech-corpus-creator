@@ -1,5 +1,5 @@
 import { ExportFormType, UtteranceType } from "./types";
-import { padWithLeadingZeros } from "./utils";
+import { generateAudioName } from "./utils";
 
 export const TranscriptContent = ({
   fileName,
@@ -14,20 +14,22 @@ export const TranscriptContent = ({
     const items: React.JSX.Element[] = [];
 
     for (let i = 0; i < utterances.length; i++) {
-      let key: string = utterances[i].id.toString();
-      if (formValue.audioNamePattern === "zeros") {
-        key = padWithLeadingZeros(utterances.length, i + 1);
-      } else if (formValue.audioNamePattern === "asc") {
-        key = (i + 1).toString();
-      }
+      const name = generateAudioName(
+        formValue.audioPrefix,
+        formValue.audioSuffix,
+        formValue.audioNamePattern,
+        utterances[i].id,
+        utterances.length,
+        i + 1
+      );
       if (utterances.length > 7) {
         if (i < 3 || i >= utterances.length - 3) {
           items.push(
             <RenderUtterance
-              key={key}
-              id={key}
-              utt={utterances[i]}
-              formValue={formValue}
+              key={name}
+              id={name}
+              delimiter={formValue.transcriptionDelimiter}
+              utterance={utterances[i].text}
             />
           );
         } else if (i === 3) {
@@ -36,10 +38,10 @@ export const TranscriptContent = ({
       } else {
         items.push(
           <RenderUtterance
-            key={key}
-            id={key}
-            utt={utterances[i]}
-            formValue={formValue}
+            key={name}
+            id={name}
+            delimiter={formValue.transcriptionDelimiter}
+            utterance={utterances[i].text}
           />
         );
       }
@@ -62,23 +64,19 @@ export const TranscriptContent = ({
 };
 
 const RenderUtterance = ({
-  utt,
-  formValue,
   id,
+  utterance,
+  delimiter,
 }: {
-  utt: UtteranceType;
-  formValue: ExportFormType;
   id: string;
+  utterance: string;
+  delimiter: string;
 }) => {
   return (
     <p className="truncate">
-      <span className="text-red-300">
-        {formValue.audioPrefix}
-        {id}
-        {formValue.audioSuffix}
-      </span>
-      {formValue.transcriptionDelimiter}
-      <span className="text-green-300">{utt.text}</span>
+      <span className="text-red-300">{id}</span>
+      {delimiter}
+      <span className="text-green-300">{utterance}</span>
     </p>
   );
 };

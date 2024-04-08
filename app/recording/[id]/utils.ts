@@ -1,4 +1,5 @@
-import { FileSystemItem, Folder } from "./types";
+import JSZip from "jszip";
+import { FileSystemItem, Folder, UtteranceType } from "./types";
 
 export const normalizeSentence = (sentence: string) => {
   let withoutPunctuation = sentence.replace(
@@ -72,7 +73,7 @@ export const createFolderStructureFromPath = (
 };
 
 export const createFileArray = (
-  count: number,
+  utterances: UtteranceType[],
   prefix: string,
   pattern: string,
   suffix: string,
@@ -80,8 +81,12 @@ export const createFileArray = (
   limit = -1
 ) => {
   const fileArray: FileSystemItem[] = [];
-  for (let i = 1; i <= count; i++) {
-    if (i > limit && i < count - limit && count > 10) {
+  for (let i = 0; i < utterances.length; i++) {
+    if (
+      i > limit - 1 &&
+      i < utterances.length - limit &&
+      utterances.length > 5
+    ) {
       const file = {
         name: "..",
         id: "etc",
@@ -89,20 +94,19 @@ export const createFileArray = (
         type: "file",
       };
       fileArray.push(file);
-      i = count - limit;
+      i = utterances.length - limit - 1;
     } else {
-      let id = i.toString();
-
-      if (pattern === "uuid") {
-        id = Math.random().toString(36).substring(2, 5);
-      } else if (pattern === "zeros") {
-        id = padWithLeadingZeros(count, i);
-      }
-
-      const name = prefix + id + suffix;
+      const name = generateAudioName(
+        prefix,
+        suffix,
+        pattern,
+        utterances[i].id,
+        utterances.length,
+        i + 1
+      );
       const file = {
         name,
-        id,
+        id: name,
         format,
         type: "file",
       };
@@ -126,3 +130,47 @@ export const padWithLeadingZeros = (maxValue: number, n: number): string => {
   const padding = "0".repeat(paddingLength);
   return padding + nString;
 };
+
+export const generateAudioName = (
+  prefix: string,
+  suffix: string,
+  pattern: string,
+  id: string,
+  maxLength: number,
+  index: number
+) => {
+  let key = id;
+  if (pattern === "zeros") {
+    key = padWithLeadingZeros(maxLength, index);
+  } else if (pattern === "asc") {
+    key = index.toString();
+  }
+
+  return prefix + key + suffix;
+};
+
+export function generateShortId(length) {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+export async function generateCSVBlob(
+  data: any[][],
+  delimiter: string = ","
+): Promise<Blob> {
+  try {
+    const csvContent = data.map((row) => row.join(delimiter)).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    return blob;
+  } catch (error) {
+    throw new Error(
+      "Error generating CSV: " +
+        (error instanceof Error ? error.message : JSON.stringify(error))
+    );
+  }
+}

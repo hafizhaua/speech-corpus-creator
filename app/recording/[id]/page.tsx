@@ -2,6 +2,8 @@ import React from "react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Session } from "./session";
+import { v4 } from "uuid";
+import { generateShortId } from "./utils";
 
 type UtteranceRecordingType = {
   user_id: string;
@@ -34,7 +36,7 @@ const getUtterances = async (id: string) => {
 
     const utteranceArray = utterancesArray.map((utt: string, idx: number) => {
       return {
-        id: idx + 1,
+        id: v4(),
         text: utt.trim(),
       };
     });
@@ -57,12 +59,6 @@ export default async function RecordingPage({
   const data = await getUtterances(id);
 
   if (!data) notFound();
-
-  // const data = [
-  //   "今度の休暇にはどこに行きますか？",
-  //   "京都で有名な観光スポットは何ですか？",
-  //   "ホテルの予約方法を教えてください。",
-  // ];
 
   return (
     <div className="">
