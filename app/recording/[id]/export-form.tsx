@@ -37,7 +37,7 @@ import { TranscriptContent } from "./content-preview";
 
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { generateAudioName, generateCSV, generateCSVBlob } from "./utils";
+import { generateAudioName, generateCSVBlob } from "./utils";
 
 const formSchema = z.object({
   preset: z.string().optional(),

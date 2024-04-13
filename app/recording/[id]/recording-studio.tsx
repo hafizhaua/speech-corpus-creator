@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { ConfigDataType, RecordingDataType, UtteranceType } from "./types";
+import { transcodeWebm } from "@/lib/utils/ffmpeg";
 
 interface RecordingStudioProps {
   configData: ConfigDataType;
@@ -135,6 +136,20 @@ export default function RecordingStudio({
     zip.generateAsync({ type: "blob" }).then((content) => {
       saveAs(content, "recordings.zip");
     });
+  };
+
+  const downloadBlob = async (blob: Blob) => {
+    const encodedBlob = await transcodeWebm(blob, "wav");
+
+    const url = URL.createObjectURL(encodedBlob);
+
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = url;
+    a.download = `audio.wav`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   };
 
   const assessSimilarity = (source: string, target: string) => {
@@ -296,7 +311,13 @@ export default function RecordingStudio({
             </Button>
           )}
 
-          <Button onClick={handleDownload}>Download</Button>
+          <Button
+            onClick={() => {
+              downloadBlob(recordingData[currIdx].audioBlob);
+            }}
+          >
+            Download
+          </Button>
         </div>
       </div>
     </div>
