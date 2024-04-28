@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { FileSystemItem, FileTreeProps, Folder } from "./types";
 import { createFileArray, createFolderStructureFromPath } from "./utils";
+import { AUDIO_FORMATS } from "./templates";
 
 export const FileTree: React.FC<FileTreeProps> = ({
   formValue,
@@ -29,9 +30,9 @@ export const FileTree: React.FC<FileTreeProps> = ({
   const audioFiles = createFileArray(
     utterances,
     formValue.audioPrefix,
-    formValue.audioNamePattern,
+    formValue.audioNamePattern || "asc",
     formValue.audioSuffix,
-    "wav",
+    formValue.audioFormat || "webm",
     3
   );
 
@@ -57,7 +58,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
                 {["csv", "txt"].includes(item.format) ? (
                   <FileSpreadsheet className="w-5 h-5" />
                 ) : (
-                  ["wav", "mp3", "m4a", "webm"].includes(item.format) && (
+                  AUDIO_FORMATS.includes(item.format) && (
                     <FileAudio className="w-5 h-5" />
                   )
                 )}

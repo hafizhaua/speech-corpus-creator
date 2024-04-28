@@ -38,9 +38,9 @@ export const MyUtteranceLibrary = async () => {
 
   return (
     <Card className="flex flex-col w-full h-full overflow-x-hidden">
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2 text-muted-foreground font-bold">
-          <List />
+      <CardHeader className="">
+        <CardTitle className="text-sm md:text-base flex items-center gap-2 text-muted-foreground font-bold">
+          <List className="w-4 h-4 md:w-6 md:h-6" />
           <p className="truncate">My Utterance Sets</p>
         </CardTitle>
         {/* <CardDescription>Card Description</CardDescription> */}

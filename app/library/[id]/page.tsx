@@ -47,7 +47,7 @@ export default async function DetailSet({
   if (!data) notFound();
 
   return (
-    <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-8">
+    <div className="px-6 py-10  md:px-10 md:py-12 flex flex-col gap-8">
       <Header title={data?.title} description={data?.description} />
       <SetMetadata
         language={`${data?.languages?.lang_name} (${data?.languages?.country_code})`}

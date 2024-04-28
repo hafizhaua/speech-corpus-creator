@@ -15,7 +15,7 @@ export default async function LoginPage() {
   }
 
   return (
-    <div className="p-8 py-12 md:px-10 md:py-12 space-y-8">
+    <div className="px-6 py-10  md:px-10 md:py-12 space-y-8">
       <div className="">
         <h1 className="text-2xl font-bold mb-2">User Authentication</h1>
         <p className="text-muted-foreground">

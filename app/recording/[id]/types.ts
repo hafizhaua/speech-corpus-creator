@@ -4,7 +4,7 @@ export type UtteranceType = {
 };
 
 export type ConfigDataType = {
-  fileFormat: string;
+  // fileFormat: string;
   sampleRate: number;
   sampleSize: number;
   channels: number;
@@ -43,6 +43,7 @@ export type ExportFormType = {
   fileFormat: string;
   fileName: string;
   audioPath: string;
+  audioFormat: string;
   audioNamePattern: string;
   audioPrefix: string;
   audioSuffix: string;

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Session } from "./session";
 import { v4 } from "uuid";
-import { generateShortId } from "./utils";
+import NoSSRWrapper from "@/components/NoSSRWrapper";
 
 type UtteranceRecordingType = {
   user_id: string;
@@ -61,8 +61,8 @@ export default async function RecordingPage({
   if (!data) notFound();
 
   return (
-    <div className="">
+    <NoSSRWrapper>
       <Session utterances={data.utterances} langCode={data.lang_code} />
-    </div>
+    </NoSSRWrapper>
   );
 }

@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EditSkeleton() {
   return (
-    <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-4">
+    <div className="px-6 py-10  md:px-10 md:py-12 flex flex-col gap-4">
       <div className="">
         <Skeleton className="w-48 h-8 mb-2" />
       </div>{" "}

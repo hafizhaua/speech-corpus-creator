@@ -24,7 +24,7 @@ export default function SetMetadata({
   const wordCount = calculateWordCount(utterances);
   const sentenceCount = calculateSentenceCount(utterances);
   return (
-    <div className="flex gap-16">
+    <div className="flex gap-8 md:gap-16 flex-wrap">
       <div className="">
         <p className="text-muted-foreground text-xs tracking-wider uppercase">
           Language

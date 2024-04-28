@@ -1,5 +1,7 @@
 import JSZip from "jszip";
 import { FileSystemItem, Folder, UtteranceType } from "./types";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { fetchFile, toBlobURL } from "@ffmpeg/util";
 
 export const normalizeSentence = (sentence: string) => {
   let withoutPunctuation = sentence.replace(
@@ -174,3 +176,56 @@ export async function generateCSVBlob(
     );
   }
 }
+
+export const encodeAudio = async (recordingBlob: Blob) => {
+  const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+  const ffmpeg = new FFmpeg();
+  ffmpeg.on("log", ({ message }) => {
+    // console.log(message);
+  });
+  // toBlobURL is used to bypass CORS issue, urls with the same
+  // domain can be used directly.
+  await ffmpeg.load({
+    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+  });
+  await ffmpeg.writeFile("input.webm", await fetchFile(recordingBlob));
+  // Transcode WebM to WAV
+  // await ffmpeg.exec(["-i", "input.webm", "output.wav"]);
+
+  try {
+    // await ffmpeg.exec([
+    //   "-i",
+    //   "input.webm",
+    //   "-ar",
+    //   "22050",
+    //   "-vn",
+    //   // "-acodec",
+    //   // "pcm_s161e",
+    //   "-b:a",
+    //   "192k",
+    //   "output.wav",
+    // ]);
+    await ffmpeg.exec([
+      "-i",
+      "input.webm",
+      "-f",
+      "wav",
+      "-acodec",
+      "pcm_s16le",
+      "-ac",
+      "1",
+      "-ar",
+      "16000",
+      "-vn",
+      "-b:a",
+      "192k",
+      "output.wav",
+    ]);
+
+    const data = (await ffmpeg.readFile("output.wav")) as any;
+    return new Blob([data.buffer], { type: "audio/wav" });
+  } catch (error) {
+    console.log(error);
+  }
+};

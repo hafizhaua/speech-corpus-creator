@@ -37,13 +37,15 @@ import { TranscriptContent } from "./content-preview";
 
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { generateAudioName, generateCSVBlob } from "./utils";
+import { encodeAudio, generateAudioName, generateCSVBlob } from "./utils";
+import { AUDIO_FORMATS, LJSPEECH, PIPER, RESET } from "./templates";
 
 const formSchema = z.object({
   preset: z.string().optional(),
   fileFormat: z.string(),
   fileName: z.string(),
   audioPath: z.string(),
+  audioFormat: z.string(),
   audioNamePattern: z.string(),
   audioPrefix: z.string(),
   audioSuffix: z.string(),
@@ -62,26 +64,15 @@ export default function ExportForm({
 }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      fileFormat: "",
-      fileName: "",
-      audioPath: "",
-      audioNamePattern: "",
-      audioPrefix: "",
-      audioSuffix: "",
-      transcriptionPath: "",
-      transcriptionName: "",
-      transcriptionFormat: "",
-      transcriptionDelimiter: "",
-    },
+    defaultValues: RESET,
   });
 
   const formValue = form.watch();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const csvData: any = [];
-
     const zip = new JSZip();
+    const encodePromises: Promise<void>[] = []; // Array to store promises for encoding audio
 
     audioData?.forEach((data, idx) => {
       const fileName = generateAudioName(
@@ -93,13 +84,20 @@ export default function ExportForm({
         idx + 1
       );
       csvData.push([fileName, utterances[idx].text]);
-      zip.file(
-        `${
-          values.audioPath !== "" ? values.audioPath + "/" : ""
-        }${fileName}.webm`,
-        data.audioBlob
-      );
+
+      const encodePromise = encodeAudio(data.audioBlob).then((encodedAudio) => {
+        zip.file(
+          `${
+            values.audioPath !== "" ? values.audioPath + "/" : ""
+          }${fileName}.${values.audioFormat}`,
+          encodedAudio as Blob
+        );
+      });
+      encodePromises.push(encodePromise); // Store the promise
     });
+
+    // Wait for all encoding operations to complete
+    await Promise.all(encodePromises);
 
     const csvBlob = await generateCSVBlob(
       csvData,
@@ -114,42 +112,13 @@ export default function ExportForm({
         csvBlob
       );
     }
-
     const content = await zip.generateAsync({ type: "blob" });
 
     saveAs(content, `${values.fileName}.zip`);
   }
 
-  const handlePresetChange = (format: string) => {
-    if (format === "ljspeech") {
-      form.reset({
-        fileFormat: "zip",
-        fileName: "ljspeech",
-        audioPath: "wavs",
-        audioNamePattern: "zeros",
-        audioPrefix: "LJ001-",
-        audioSuffix: "",
-        transcriptionPath: "",
-        transcriptionName: "transcripts",
-        transcriptionFormat: "csv",
-        transcriptionDelimiter: "|",
-      });
-    }
-
-    if (format === "piper") {
-      form.reset({
-        fileFormat: "zip",
-        fileName: "piper",
-        audioPath: "wavs",
-        audioNamePattern: "asc",
-        audioPrefix: "",
-        audioSuffix: "",
-        transcriptionPath: "",
-        transcriptionName: "metadata",
-        transcriptionFormat: "csv",
-        transcriptionDelimiter: "|",
-      });
-    }
+  const handlePresetChange = (format: ExportFormType) => {
+    form.reset(format);
   };
 
   const handleDownload = () => {
@@ -165,7 +134,7 @@ export default function ExportForm({
   };
 
   return (
-    <div className="p-8 py-12 md:px-10 md:py-12 space-y-4">
+    <div className="px-6 py-10  md:px-10 md:py-12 space-y-4">
       <h1 className="text-2xl font-bold">Export Configuration</h1>
       <p className="text-muted-foreground">
         Congratulations on completing the recording process. Lastly, choose how
@@ -189,14 +158,15 @@ export default function ExportForm({
                   <DropdownMenuContent>
                     <DropdownMenuLabel>Standard Format</DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handlePresetChange(RESET)}>
+                      Reset
+                    </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => handlePresetChange("ljspeech")}
+                      onClick={() => handlePresetChange(LJSPEECH)}
                     >
                       LJSpeech
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => handlePresetChange("piper")}
-                    >
+                    <DropdownMenuItem onClick={() => handlePresetChange(PIPER)}>
                       Piper TTS
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -225,10 +195,10 @@ export default function ExportForm({
                         </FormControl>
                         <SelectContent>
                           <SelectItem key="zip" value="zip">
-                            .zip
+                            zip
                           </SelectItem>
                           <SelectItem key="rar" value="rar">
-                            .rar
+                            rar
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -278,6 +248,35 @@ export default function ExportForm({
                           />
                         </div>
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="audioFormat"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>File Format</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value?.toString()}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select file format" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {AUDIO_FORMATS.map((format) => {
+                            return (
+                              <SelectItem key={format} value={format}>
+                                {format}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -389,10 +388,10 @@ export default function ExportForm({
                         </FormControl>
                         <SelectContent>
                           <SelectItem key="csv" value="csv">
-                            .csv
+                            csv
                           </SelectItem>
                           <SelectItem key="txt" value="txt">
-                            .txt
+                            txt
                           </SelectItem>
                         </SelectContent>
                       </Select>

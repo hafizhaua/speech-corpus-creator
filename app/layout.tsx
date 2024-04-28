@@ -12,6 +12,7 @@ import {
 import { Sidebar } from "@/components/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Toaster } from "@/components/ui/sonner";
+import MobileMenu from "@/components/mobile-menu";
 
 export const fontSans = FontSans({
   subsets: ["latin"],
@@ -55,7 +56,10 @@ export default function RootLayout({
             <ResizableHandle />
             <ResizablePanel defaultSize={75}>
               <ScrollArea className="h-screen">
-                <main className="">{children}</main>
+                <div className="block lg:hidden">
+                  <MobileMenu />
+                </div>
+                <div className="w-screen md:w-auto">{children}</div>
               </ScrollArea>
             </ResizablePanel>
           </ResizablePanelGroup>

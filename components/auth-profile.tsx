@@ -25,15 +25,17 @@ export const AuthProfile = async () => {
   return (
     <>
       {data?.user ? (
-        <div className="w-full overflow-hidden border rounded-lg px-6 py-4">
-          <div className="flex items-center justify-between ">
-            <div className="flex gap-3 items-center">
-              <Avatar className="w-8 h-8">
+        <div className="w-full overflow-hidden border rounded-lg px-6 py-2 md:py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex gap-2 md:gap-3 items-center">
+              <Avatar className="w-6 h-6 md:w-8 md:h-8">
                 <AvatarImage src={avatarUrl} />
                 <AvatarFallback>{`${getInitial(userName)}`}</AvatarFallback>
               </Avatar>
               <p className="truncate">
-                <span className="font-semibold">{userName}</span>
+                <span className="font-semibold text-sm md:text-base">
+                  {userName}
+                </span>
               </p>
             </div>
             <LogOutButton />

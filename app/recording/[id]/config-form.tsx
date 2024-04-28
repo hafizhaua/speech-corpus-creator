@@ -24,7 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ConfigDataType } from "./types";
 
 const formSchema = z.object({
-  fileFormat: z.string(),
+  // fileFormat: z.string(),
   sampleRate: z.coerce.number(),
   sampleSize: z.coerce.number(),
   channels: z.coerce.number(),
@@ -39,11 +39,16 @@ export default function ConfigForm({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fileFormat: ".wav",
+      // fileFormat: ".wav",
       sampleRate: 44100,
       sampleSize: 16,
       channels: 1,
-      features: ["echoCancellation", "noiseSuppression", "autoGainControl"],
+      features: [
+        "speechAccuracy",
+        "echoCancellation",
+        "noiseSuppression",
+        "autoGainControl",
+      ],
     },
   });
 
@@ -65,7 +70,7 @@ export default function ConfigForm({
   }
 
   return (
-    <div className="p-8 py-12 md:px-10 md:py-12 space-y-4">
+    <div className="px-6 py-10  md:px-10 md:py-12 space-y-4">
       <h1 className="text-2xl font-bold">Audio Configuration Preference</h1>
       <p className="text-muted-foreground">
         Before we start the recording session, please select your preference of
@@ -73,7 +78,7 @@ export default function ConfigForm({
       </p>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <FormField
+          {/* <FormField
             control={form.control}
             name="fileFormat"
             render={({ field }) => (
@@ -101,7 +106,7 @@ export default function ConfigForm({
                 <FormMessage />
               </FormItem>
             )}
-          />
+          /> */}
           <FormField
             control={form.control}
             name="sampleRate"

@@ -14,7 +14,7 @@ export default async function CreateSet() {
   const languages = await getLanguages();
 
   return (
-    <div className="p-8 py-12 md:px-10 md:py-12 space-y-4">
+    <div className="px-6 py-10  md:px-10 md:py-12 space-y-4">
       <h1 className="text-2xl font-bold">Create Utterance Set</h1>
       <UtteranceSetForm languages={languages} />
     </div>

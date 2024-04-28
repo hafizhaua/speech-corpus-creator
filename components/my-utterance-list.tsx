@@ -24,6 +24,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { SheetClose } from "./ui/sheet";
 
 interface UtteranceListProps {
   id: string;
@@ -61,12 +62,12 @@ export const MyUtteranceList: React.FC<UtteranceListProps> = ({
     <div className="flex justify-between items-center gap-2">
       <Link href={`/utterance/${id}`} className="group">
         <div className="truncate">
-          <h2 className="truncate font-semibold text-primary/90 mb-1 group-hover:text-primary transition">
+          <h2 className="text-sm md:text-base truncate font-semibold text-primary/90 mb-1 group-hover:text-primary transition">
             {title}
           </h2>
           <div className="flex items-center gap-2">
             <ReactCountryFlag countryCode={countryCode} svg />
-            <span className="truncate text-primary/50 group-hover:text-primary/75 transition text-sm">
+            <span className="truncate text-primary/50 group-hover:text-primary/75 transition md:text-sm text-xs">
               {lang} ({countryCode})
             </span>
           </div>
@@ -75,7 +76,7 @@ export const MyUtteranceList: React.FC<UtteranceListProps> = ({
       <AlertDialog>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="h-6 w-6">
               <MoreHorizontal className="text-primary/50" />
             </Button>
           </DropdownMenuTrigger>

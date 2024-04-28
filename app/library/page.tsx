@@ -27,7 +27,7 @@ export default async function UtteranceLibrary() {
   const languages = await getLanguages();
   const selectOptions = [{ id: "all", lang_name: "All" }, ...languages];
   return (
-    <div className="p-8 py-12 md:px-10 md:py-12 flex flex-col gap-8 h-screen">
+    <div className="px-6 py-10  md:px-10 md:py-12 flex flex-col gap-8 h-screen">
       <div className="">
         <h1 className="text-2xl font-bold mb-2">Utterance Library</h1>
         <p className="text-muted-foreground">

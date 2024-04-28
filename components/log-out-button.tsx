@@ -22,7 +22,7 @@ export default function LogOutButton() {
 
   return (
     <Button variant="outline" size="icon" onClick={handleLogout}>
-      <LogOut className="h-[1.2rem] w-[1.2rem]" />
+      <LogOut className="h-4 w-4 md:h-[1.2rem] md:w-[1.2rem]" />
       <span className="sr-only">Log Out</span>
     </Button>
   );
