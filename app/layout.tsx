@@ -13,6 +13,7 @@ import { Sidebar } from "@/components/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Toaster } from "@/components/ui/sonner";
 import MobileMenu from "@/components/mobile-menu";
+import { ViewTransitions } from "next-view-transitions";
 
 export const fontSans = FontSans({
   subsets: ["latin"],
@@ -31,41 +32,43 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
-        )}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          // disableTransitionOnChange
+    <ViewTransitions>
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={cn(
+            "min-h-screen bg-background font-sans antialiased",
+            fontSans.variable
+          )}
         >
-          <ResizablePanelGroup direction="horizontal" className="w-full">
-            <ResizablePanel
-              defaultSize={25}
-              minSize={20}
-              maxSize={50}
-              className="hidden md:block"
-            >
-              <Sidebar />
-            </ResizablePanel>
-            <ResizableHandle />
-            <ResizablePanel defaultSize={75}>
-              <ScrollArea className="h-screen">
-                <div className="block lg:hidden">
-                  <MobileMenu />
-                </div>
-                <div className="w-screen md:w-auto">{children}</div>
-              </ScrollArea>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-          <Toaster />
-        </ThemeProvider>
-      </body>
-    </html>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            // disableTransitionOnChange
+          >
+            <ResizablePanelGroup direction="horizontal" className="w-full">
+              <ResizablePanel
+                defaultSize={25}
+                minSize={20}
+                maxSize={50}
+                className="hidden md:block"
+              >
+                <Sidebar />
+              </ResizablePanel>
+              <ResizableHandle />
+              <ResizablePanel defaultSize={75}>
+                <ScrollArea className="h-screen">
+                  <div className="block lg:hidden">
+                    <MobileMenu />
+                  </div>
+                  <div className="w-screen md:w-auto">{children}</div>
+                </ScrollArea>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+            <Toaster />
+          </ThemeProvider>
+        </body>
+      </html>
+    </ViewTransitions>
   );
 }

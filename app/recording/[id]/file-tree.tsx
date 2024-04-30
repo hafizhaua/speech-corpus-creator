@@ -10,6 +10,7 @@ import { AUDIO_FORMATS } from "./templates";
 
 export const FileTree: React.FC<FileTreeProps> = ({
   formValue,
+  recordedCount,
   utterances,
 }) => {
   let rootFile: Folder = {
@@ -29,6 +30,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
 
   const audioFiles = createFileArray(
     utterances,
+    recordedCount,
     formValue.audioPrefix,
     formValue.audioNamePattern || "asc",
     formValue.audioSuffix,

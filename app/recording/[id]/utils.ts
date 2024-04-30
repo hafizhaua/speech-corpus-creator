@@ -76,6 +76,7 @@ export const createFolderStructureFromPath = (
 
 export const createFileArray = (
   utterances: UtteranceType[],
+  recordedCount: number,
   prefix: string,
   pattern: string,
   suffix: string,
@@ -83,12 +84,8 @@ export const createFileArray = (
   limit = -1
 ) => {
   const fileArray: FileSystemItem[] = [];
-  for (let i = 0; i < utterances.length; i++) {
-    if (
-      i > limit - 1 &&
-      i < utterances.length - limit &&
-      utterances.length > 5
-    ) {
+  for (let i = 0; i < recordedCount; i++) {
+    if (i > limit - 1 && i < recordedCount - limit && recordedCount > 5) {
       const file = {
         name: "..",
         id: "etc",
@@ -96,14 +93,14 @@ export const createFileArray = (
         type: "file",
       };
       fileArray.push(file);
-      i = utterances.length - limit - 1;
+      i = recordedCount - limit - 1;
     } else {
       const name = generateAudioName(
         prefix,
         suffix,
         pattern,
         utterances[i].id,
-        utterances.length,
+        recordedCount,
         i + 1
       );
       const file = {
@@ -177,7 +174,13 @@ export async function generateCSVBlob(
   }
 }
 
-export const encodeAudio = async (recordingBlob: Blob) => {
+export const encodeAudio = async (
+  recordingBlob: Blob,
+  format: string,
+  sampleRate: number,
+  sampleSize: number,
+  channelCount: number
+) => {
   const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
   const ffmpeg = new FFmpeg();
   ffmpeg.on("log", ({ message }) => {
@@ -206,25 +209,46 @@ export const encodeAudio = async (recordingBlob: Blob) => {
     //   "192k",
     //   "output.wav",
     // ]);
-    await ffmpeg.exec([
-      "-i",
-      "input.webm",
-      "-f",
-      "wav",
-      "-acodec",
-      "pcm_s16le",
-      "-ac",
-      "1",
-      "-ar",
-      "16000",
-      "-vn",
-      "-b:a",
-      "192k",
-      "output.wav",
-    ]);
 
-    const data = (await ffmpeg.readFile("output.wav")) as any;
-    return new Blob([data.buffer], { type: "audio/wav" });
+    if (format === "wav") {
+      await ffmpeg.exec([
+        "-i",
+        "input.webm",
+        "-f",
+        "wav",
+        "-acodec",
+        "pcm_s16le",
+        "-ac",
+        channelCount.toString(),
+        "-ar",
+        sampleRate.toString(),
+        "-vn",
+        "-b:a",
+        "192k",
+        "output.wav",
+      ]);
+      const data = (await ffmpeg.readFile("output.wav")) as any;
+      return new Blob([data.buffer], { type: "audio/wav" });
+    } else if (format === "mp3") {
+      await ffmpeg.exec([
+        "-i",
+        "input.webm",
+        "-f",
+        "mp3",
+        "-acodec",
+        "libmp3lame",
+        "-ac",
+        channelCount.toString(),
+        "-ar",
+        sampleRate.toString(),
+        "-vn",
+        "-b:a",
+        "192k",
+        "output.mp3",
+      ]);
+      const data = (await ffmpeg.readFile("output.mp3")) as any;
+      return new Blob([data.buffer], { type: "audio/mp3" });
+    }
   } catch (error) {
     console.log(error);
   }

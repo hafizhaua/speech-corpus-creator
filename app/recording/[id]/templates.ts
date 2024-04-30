@@ -9,7 +9,11 @@ export const RESET = {
   transcriptionPath: "",
   transcriptionName: "",
   transcriptionFormat: "",
+  includePath: false,
   transcriptionDelimiter: "",
+  // sampleRate: 22050,
+  // sampleSize: 16,
+  // channels: "",
 };
 
 export const LJSPEECH = {
@@ -23,7 +27,11 @@ export const LJSPEECH = {
   transcriptionPath: "",
   transcriptionName: "transcripts",
   transcriptionFormat: "csv",
+  includePath: false,
   transcriptionDelimiter: "|",
+  sampleRate: 22050,
+  sampleSize: 16,
+  channels: 1,
 };
 
 export const PIPER = {
@@ -37,7 +45,11 @@ export const PIPER = {
   transcriptionPath: "",
   transcriptionName: "metadata",
   transcriptionFormat: "csv",
+  includePath: false,
   transcriptionDelimiter: "|",
+  sampleRate: 22050,
+  sampleSize: 16,
+  channels: 1,
 };
 
 export const AUDIO_FORMATS = ["wav", "mp3", "webm"];

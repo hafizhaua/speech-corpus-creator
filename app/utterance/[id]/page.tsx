@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { UtteranceList } from "./utterance-list";
 import SetMetadata from "./set-metadata";
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { Suspense } from "react";
 import UtteranceSkeleton from "./loading";
 

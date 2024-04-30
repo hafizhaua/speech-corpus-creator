@@ -44,7 +44,7 @@ export default function RecordingStudio({
     width: 350,
   });
 
-  const isAssessAccuracy = configData?.features.includes("speechAccuracy");
+  const isAssessAccuracy = configData?.features?.includes("speechAccuracy");
 
   const {
     startRecording,
@@ -56,9 +56,9 @@ export default function RecordingStudio({
     channelCount: configData?.channels,
     sampleRate: configData?.sampleRate,
     sampleSize: configData?.sampleSize,
-    echoCancellation: configData?.features.includes("echoCancellation"),
-    noiseSuppression: configData?.features.includes("noiseSuppression"),
-    autoGainControl: configData?.features.includes("autoGainControl"),
+    echoCancellation: configData?.features?.includes("echoCancellation"),
+    noiseSuppression: configData?.features?.includes("noiseSuppression"),
+    autoGainControl: configData?.features?.includes("autoGainControl"),
   });
 
   const handleNext = () => {
@@ -313,11 +313,18 @@ export default function RecordingStudio({
 
           <Button
             onClick={() => {
+              onRecordingComplete(recordingData);
+            }}
+          >
+            Finish anyway
+          </Button>
+          {/* <Button
+            onClick={() => {
               downloadBlob(recordingData[currIdx].audioBlob);
             }}
           >
             Download
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>

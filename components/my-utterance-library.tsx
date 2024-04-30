@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { List, PackageSearch } from "lucide-react";
 import { Button } from "./ui/button";
 import { MyUtteranceList } from "./my-utterance-list";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { createClient } from "@/lib/supabase/server";
 
 interface SetProps {

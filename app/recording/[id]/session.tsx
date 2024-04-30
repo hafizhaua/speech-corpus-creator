@@ -13,7 +13,7 @@ export const Session = ({
   utterances: UtteranceType[];
   langCode: string;
 }) => {
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(2);
   const [configData, setConfigData] = useState<ConfigDataType | null>(null);
   const [audioData, setAudioData] = useState<RecordingDataType[]>([]);
 
@@ -36,10 +36,10 @@ export const Session = ({
   return (
     <div>
       {currentStep === 1 && <ConfigForm onSubmit={handleConfigSubmit} />}
-      {currentStep === 2 && configData && (
+      {currentStep === 2 && (
         <RecordingStudio
           langCode={langCode}
-          configData={configData}
+          configData={configData || {}}
           utterances={utterances}
           onRecordingComplete={handleRecordingComplete}
         />

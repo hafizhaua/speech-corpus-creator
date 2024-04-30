@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import LogOutButton from "./log-out-button";
 import { createClient } from "@/lib/supabase/server";
 import { LogIn } from "lucide-react";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 
 export const AuthProfile = async () => {
   const supabase = createClient();
@@ -27,7 +27,7 @@ export const AuthProfile = async () => {
       {data?.user ? (
         <div className="w-full overflow-hidden border rounded-lg px-6 py-2 md:py-4">
           <div className="flex items-center justify-between gap-4">
-            <div className="flex gap-2 md:gap-3 items-center">
+            <Link href="/" className="flex gap-2 md:gap-3 items-center">
               <Avatar className="w-6 h-6 md:w-8 md:h-8">
                 <AvatarImage src={avatarUrl} />
                 <AvatarFallback>{`${getInitial(userName)}`}</AvatarFallback>
@@ -37,7 +37,7 @@ export const AuthProfile = async () => {
                   {userName}
                 </span>
               </p>
-            </div>
+            </Link>
             <LogOutButton />
           </div>
         </div>

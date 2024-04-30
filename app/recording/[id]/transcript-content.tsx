@@ -3,31 +3,36 @@ import { generateAudioName } from "./utils";
 
 export const TranscriptContent = ({
   fileName,
+  recordedCount,
   utterances,
   formValue,
 }: {
   fileName: string;
+  recordedCount: number;
   utterances: UtteranceType[];
   formValue: ExportFormType;
 }) => {
   const renderItems = () => {
     const items: React.JSX.Element[] = [];
 
-    for (let i = 0; i < utterances.length; i++) {
+    for (let i = 0; i < recordedCount; i++) {
       const name = generateAudioName(
         formValue.audioPrefix,
         formValue.audioSuffix,
         formValue.audioNamePattern,
         utterances[i].id,
-        utterances.length,
+        recordedCount,
         i + 1
       );
-      if (utterances.length > 7) {
-        if (i < 3 || i >= utterances.length - 3) {
+      const id = formValue.includePath
+        ? `${formValue.audioPath}/${name}.${formValue.audioFormat}`
+        : name;
+      if (recordedCount > 7) {
+        if (i < 3 || i >= recordedCount - 3) {
           items.push(
             <RenderUtterance
               key={name}
-              id={name}
+              id={id}
               delimiter={formValue.transcriptionDelimiter}
               utterance={utterances[i].text}
             />
@@ -39,7 +44,7 @@ export const TranscriptContent = ({
         items.push(
           <RenderUtterance
             key={name}
-            id={name}
+            id={id}
             delimiter={formValue.transcriptionDelimiter}
             utterance={utterances[i].text}
           />

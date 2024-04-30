@@ -20,7 +20,7 @@ import {
 import { Button } from "./ui/button";
 import { MoreHorizontal } from "lucide-react";
 import ReactCountryFlag from "react-country-flag";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
