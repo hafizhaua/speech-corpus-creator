@@ -12,7 +12,7 @@ export default function SetMetadata({
 }: SetMetadataProps) {
   // Function to calculate word count
   const calculateWordCount = (text: string) => {
-    return text.trim().split(/\s+/).length;
+    return text.split(/\||\s/).length;
   };
 
   // Function to calculate number of sentences
