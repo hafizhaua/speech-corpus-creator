@@ -277,6 +277,7 @@ export default function ExportForm({
                       <FormLabel>File Format</FormLabel>
                       <Select
                         onValueChange={field.onChange}
+                        value={field.value?.toString()}
                         defaultValue={field.value?.toString()}
                       >
                         <FormControl>

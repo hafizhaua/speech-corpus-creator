@@ -44,7 +44,8 @@ export default function RecordingStudio({
     width: 350,
   });
 
-  const isAssessAccuracy = configData?.features?.includes("speechAccuracy");
+  const isAssessAccuracy =
+    configData?.features?.includes("speechAccuracy") || false;
 
   const {
     startRecording,
@@ -53,12 +54,15 @@ export default function RecordingStudio({
     isRecording,
     mediaRecorder,
   } = useAudioRecorder({
+    deviceId: configData?.deviceId || "default",
     channelCount: configData?.channels,
     sampleRate: configData?.sampleRate,
     sampleSize: configData?.sampleSize,
-    echoCancellation: configData?.features?.includes("echoCancellation"),
-    noiseSuppression: configData?.features?.includes("noiseSuppression"),
-    autoGainControl: configData?.features?.includes("autoGainControl"),
+    echoCancellation:
+      configData?.features?.includes("echoCancellation") || true,
+    noiseSuppression:
+      configData?.features?.includes("noiseSuppression") || true,
+    autoGainControl: configData?.features?.includes("autoGainControl") || true,
   });
 
   const handleNext = () => {
@@ -122,7 +126,7 @@ export default function RecordingStudio({
       setTimeout(() => {
         setIsProcessing(false);
         setAlert("Click to re-attempt");
-      }, 1000);
+      }, 3000);
     }
   };
 
@@ -139,24 +143,28 @@ export default function RecordingStudio({
   };
 
   const downloadBlob = async (blob: Blob) => {
-    const encodedBlob = await transcodeWebm(blob, "wav");
+    // const encodedBlob = await transcodeWebm(blob, "wav");
 
-    const url = URL.createObjectURL(encodedBlob);
+    const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
     a.style.display = "none";
     a.href = url;
-    a.download = `audio.wav`;
+    a.download = `audio.webm`;
     document.body.appendChild(a);
     a.click();
     a.remove();
   };
 
   const assessSimilarity = (source: string, target: string) => {
+    console.log("Assessing...");
     const similarity = stringSimilarity(
       normalizeSentence(source),
       normalizeSentence(target)
     );
+
+    setIsProcessing(false);
+    setAlert("Click to re-attempt");
     setSimilarityIdx(similarity);
   };
 
@@ -270,7 +278,7 @@ export default function RecordingStudio({
               {alert}
             </p>
           </div>
-          {isAssessAccuracy && showResult && (
+          {isAssessAccuracy && showResult && !isProcessing && (
             <>
               <div className="border border-muted rounded-lg px-6 py-4 flex gap-4">
                 <div className="space-y-1">
@@ -289,7 +297,9 @@ export default function RecordingStudio({
                       ? "Consider re-attempting with clear voice and tempo"
                       : similarityIdx && similarityIdx < 0.95
                       ? "Decent. You may re-attempt or proceed to the next one."
-                      : "Perfect speech! Redirecting to the next one.."}
+                      : similarityIdx && similarityIdx >= 0.95
+                      ? "Perfect speech! Redirecting to the next one.."
+                      : "Unable to process your speech"}
                   </p>
                 </div>
               </div>
@@ -318,13 +328,14 @@ export default function RecordingStudio({
           >
             Finish anyway
           </Button>
-          {/* <Button
+          <Button
             onClick={() => {
               downloadBlob(recordingData[currIdx].audioBlob);
+              // handleDownload()
             }}
           >
             Download
-          </Button> */}
+          </Button>
         </div>
       </div>
     </div>

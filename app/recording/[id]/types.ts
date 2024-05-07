@@ -6,7 +6,7 @@ export type UtteranceType = {
 };
 
 export type ConfigDataType = {
-  // fileFormat: string;
+  deviceId?: string;
   sampleRate?: number;
   sampleSize?: number;
   channels?: number;

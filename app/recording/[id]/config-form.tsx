@@ -22,27 +22,63 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfigDataType } from "./types";
+import { useEffect, useRef, useState } from "react";
+import { useAudioRecorder } from "react-audio-voice-recorder";
+import TestMic from "./test-mic";
 
 const formSchema = z.object({
-  // fileFormat: z.string(),
-  sampleRate: z.coerce.number(),
-  sampleSize: z.coerce.number(),
-  channels: z.coerce.number(),
   features: z.array(z.string()),
+  deviceId: z.string(),
 });
+
+interface MediaDeviceInfo {
+  deviceId: string;
+  kind: string;
+  label: string;
+}
 
 export default function ConfigForm({
   onSubmit,
 }: {
   onSubmit: (data: ConfigDataType) => void;
 }) {
+  const [microphones, setMicrophones] = useState<MediaDeviceInfo[]>([]);
+  const [isMicEnabled, setIsMicEnabled] = useState(false);
+  const [selectedMicrophone, setSelectedMicrophone] = useState<string>("");
+
+  useEffect(() => {
+    async function getMicrophones() {
+      try {
+        const permission = await navigator.permissions.query({
+          name: "microphone" as PermissionName,
+        });
+
+        if (permission.state === "granted") setIsMicEnabled(true);
+
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const microphoneList = devices.filter(
+          (device) => device.kind === "audioinput"
+        );
+        setMicrophones(microphoneList);
+
+        // Select the first microphone by default
+        if (microphoneList.length > 0) {
+          setSelectedMicrophone(microphoneList[0].deviceId);
+          form.setValue("deviceId", microphoneList[0].deviceId);
+        }
+
+        console.log(microphones);
+      } catch (error) {
+        console.error("Error accessing microphone:", error);
+      }
+    }
+
+    getMicrophones();
+  }, []);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      // fileFormat: ".wav",
-      sampleRate: 44100,
-      sampleSize: 16,
-      channels: 1,
       features: [
         "speechAccuracy",
         "echoCancellation",
@@ -52,11 +88,7 @@ export default function ConfigForm({
     },
   });
 
-  const fileFormatOption = [".wav", ".mp3", ".webm"];
-  const sampleRateOption = [
-    8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000, 88200, 96000,
-  ];
-  const sampleSizeOption = [8, 16, 24, 32];
+  const formValue = form.watch();
 
   const featureOption = [
     { id: "speechAccuracy", label: "Speech Accuracy Assessment" },
@@ -66,8 +98,41 @@ export default function ConfigForm({
   ];
 
   function handleSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
     onSubmit(values);
   }
+
+  const handleEnableMic = async () => {
+    try {
+      const handleSuccess = async (stream) => {
+        stream.getTracks().forEach((track) => track.stop());
+        console.log("Microphone access granted");
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const microphoneList = devices.filter(
+          (device) => device.kind === "audioinput"
+        );
+
+        console.log(microphoneList);
+        if (microphoneList.length > 0) {
+          navigator.mediaDevices.getUserMedia({
+            audio: {
+              deviceId: devices[0].deviceId,
+            },
+          });
+
+          setMicrophones(microphoneList);
+          setSelectedMicrophone(devices[0].deviceId);
+          setIsMicEnabled(true);
+        }
+      };
+
+      navigator.mediaDevices
+        .getUserMedia({ audio: true, video: false })
+        .then(handleSuccess);
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+    }
+  };
 
   return (
     <div className="px-6 py-10  md:px-10 md:py-12 space-y-4">
@@ -78,117 +143,59 @@ export default function ConfigForm({
       </p>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          {/* <FormField
-            control={form.control}
-            name="fileFormat"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>File Format</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value?.toString()}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select file format" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {fileFormatOption.map((format) => {
-                      return (
-                        <SelectItem key={format} value={format}>
-                          {format}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
           <FormField
             control={form.control}
-            name="sampleRate"
+            name="deviceId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Sample Rate</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value?.toString()}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select sample rate (Hz)" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {sampleRateOption.map((rate) => {
-                      return (
-                        <SelectItem key={rate} value={rate.toString()}>
-                          {rate} Hz
+                <FormLabel>Microphone</FormLabel>
+                <div className="flex gap-4">
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    defaultValue={field.value}
+                  >
+                    <FormControl className="flex gap-4">
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select microphone" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {microphones[0]?.deviceId !== "" ? (
+                        microphones?.map((microphone) => {
+                          return (
+                            <SelectItem
+                              value={microphone?.deviceId}
+                              key={microphone?.deviceId}
+                            >
+                              {microphone.label ||
+                                `Microphone ${microphone.deviceId}`}
+                            </SelectItem>
+                          );
+                        })
+                      ) : (
+                        <SelectItem value="notfound">
+                          No Microphone Found
                         </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="sampleSize"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Sample Size</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value?.toString()}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select sample size (bits)" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {sampleSizeOption.map((size) => {
-                      return (
-                        <SelectItem key={size} value={size.toString()}>
-                          {size} bits
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="channels"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Channels</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value?.toString()}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select number of channels" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem key="1" value="1">
-                      Mono
-                    </SelectItem>
-                    <SelectItem key="2" value="2">
-                      Stereo
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {isMicEnabled ? (
+                    <TestMic
+                      microphoneId={formValue.deviceId}
+                      config={formValue}
+                    />
+                  ) : (
+                    <Button
+                      type="button"
+                      className=""
+                      onClick={handleEnableMic}
+                      variant="outline"
+                    >
+                      Enable Microphone
+                    </Button>
+                  )}
+                </div>
                 <FormMessage />
               </FormItem>
             )}
