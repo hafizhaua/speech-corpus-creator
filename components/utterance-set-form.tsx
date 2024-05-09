@@ -48,9 +48,10 @@ import {
   createUtteranceSet,
   updateUtteranceSet,
 } from "@/lib/actions/utterance-set";
+import { FileTab } from "./file-tab";
 
 const formSchema = z.object({
-  title: z.string().trim().min(1).max(30),
+  title: z.string().trim().min(1).max(50),
   description: z.string().trim().min(1).max(100),
   language_id: z.string(),
   utterances: z.string(),
@@ -152,11 +153,24 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
     if (file) {
       try {
         const content = await readFileAsync(file);
-        const sentencesArray = content.split("\n");
+        const lines = content.split("\n");
 
-        form.setValue("utterances", sentencesArray.join("|"));
+        const texts = lines.map((line, index) => {
+          // Check if the line has tab-separated id and text
+          const parts = line.split("\t");
+          if (parts.length === 2) {
+            return parts[1].trim();
+          } else {
+            // If no tab-separated id and text, assign id based on line number
+            return line.trim();
+          }
+        });
 
-        resetUtteranceSet(sentencesArray);
+        console.log(texts);
+
+        form.setValue("utterances", texts.join("|"));
+
+        resetUtteranceSet(texts);
       } catch (error) {
         console.error("Error reading the file:", error);
       }
@@ -265,29 +279,15 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
                           Utterance text file
                         </DialogTitle>
                         <DialogDescription>
-                          Each utterance is divided by the new line; i.e. below
-                          file will be rendered as 10 individual utterances.
+                          <p>
+                            Each utterance is divided by the new line where each
+                            line consists either text only or id-text pair
+                            divided by tab whitespace; i.e. below file will be
+                            rendered as 10 individual utterances.
+                          </p>
                         </DialogDescription>
                       </DialogHeader>
-                      <div className="">
-                        <span className="rounded-md text-xs px-4 py-2 bg-muted text-right text-muted-foreground mb-4">
-                          example.txt
-                        </span>
-                        <div className="bg-muted w-full rounded-md rounded-tl-none py-6 px-6 text-sm">
-                          <code>
-                            The city lights shimmered in the distance. <br />{" "}
-                            Urban life is fast-paced and dynamic. <br />
-                            Skyscrapers defined the city skyline. <br />
-                            People hurried along the bustling streets. <br />
-                            Street vendors added color to the cityscape. <br />
-                            Parks provided an oasis in the heart of the city.{" "}
-                            <br />
-                            Public transportation connected every corner. <br />
-                            The city never sleeps; it&apos;s alive 24/7. <br />
-                            Cultural diversity thrived in every neighborhood.
-                          </code>
-                        </div>
-                      </div>
+                      <FileTab />
                     </DialogContent>
                   </Dialog>
                   .

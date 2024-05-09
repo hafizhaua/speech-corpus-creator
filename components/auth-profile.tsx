@@ -23,7 +23,7 @@ export const AuthProfile = async () => {
   };
 
   return (
-    <>
+    <div className="w-full">
       {data?.user ? (
         <div className="w-full overflow-hidden border rounded-lg px-6 py-2 md:py-4">
           <div className="flex items-center justify-between gap-4">
@@ -53,6 +53,6 @@ export const AuthProfile = async () => {
           </div>
         </Link>
       )}
-    </>
+    </div>
   );
 };

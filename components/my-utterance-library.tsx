@@ -37,46 +37,48 @@ export const MyUtteranceLibrary = async () => {
     .returns<SetProps[]>();
 
   return (
-    <Card className="flex flex-col w-full h-full overflow-x-hidden">
+    <Card className="flex-1 flex flex-col justify-between w-full h-full overflow-hidden">
       <CardHeader className="">
         <CardTitle className="text-sm md:text-base flex items-center gap-2 text-muted-foreground font-bold">
           <List className="w-4 h-4 md:w-6 md:h-6" />
           <p className="truncate">My Utterance Sets</p>
         </CardTitle>
-        {/* <CardDescription>Card Description</CardDescription> */}
       </CardHeader>
-      <ScrollArea className="h-full">
-        <CardContent className="flex flex-col flex-1 gap-3">
-          {!error && setData?.length > 0 ? (
-            setData?.map((d) => {
-              return (
-                <MyUtteranceList
-                  id={d.id.toString()}
-                  key={d.id}
-                  title={d.title}
-                  countryCode={d.languages.country_code}
-                  lang={`${d.languages.lang_name}`}
-                />
-              );
-            })
-          ) : (
-            <div className="grid place-items-center text-center text-muted-foreground mt-16 space-y-4">
-              <div className="px-4 py-4 bg-muted rounded-full">
-                <PackageSearch className="w-20 h-20" />
+
+      <ScrollArea className="flex-1">
+        <CardContent className="h-full">
+          <div className="flex flex-col gap-3">
+            {!error && setData?.length > 0 ? (
+              setData?.map((d) => {
+                return (
+                  <MyUtteranceList
+                    id={d.id.toString()}
+                    key={d.id}
+                    title={d.title}
+                    countryCode={d.languages.country_code}
+                    lang={`${d.languages.lang_name}`}
+                  />
+                );
+              })
+            ) : (
+              <div className="grid place-items-center text-center text-muted-foreground mt-16 space-y-4">
+                <div className="px-4 py-4 bg-muted rounded-full">
+                  <PackageSearch className="w-20 h-20" />
+                </div>
+                <div className="space-y-1">
+                  <h2 className="font-bold text-lg">
+                    You don&apos;t have any sets
+                  </h2>
+                  <p className="text-sm">
+                    Browse publicly available sets or create your own set.
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1">
-                <h2 className="font-bold text-lg">
-                  You don&apos;t have any sets
-                </h2>
-                <p className="text-sm">
-                  Browse publicly available sets or create your own set.
-                </p>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </CardContent>
       </ScrollArea>
-      <CardFooter className="flex flex-col gap-2 pt-2">
+      <CardFooter className="h-fit flex flex-col gap-2 pt-2">
         <Link href={"/utterance/create"} className="w-full">
           <Button className="w-full" variant="default">
             Create New Set
