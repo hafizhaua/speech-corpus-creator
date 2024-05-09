@@ -34,7 +34,7 @@ const TestMic = ({
         };
 
         mediaRecorder.onstop = function () {
-          const blob = new Blob(chunks, { type: "audio/wav" });
+          const blob = new Blob(chunks, { type: "audio/webm" });
           const audioURL = URL.createObjectURL(blob);
           const audio = new Audio(audioURL);
           audio.play();

@@ -13,13 +13,16 @@ import { toast } from "sonner";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { ConfigDataType, RecordingDataType, UtteranceType } from "./types";
-import { transcodeWebm } from "@/lib/utils/ffmpeg";
-
+import { useParams } from "next/navigation";
+import { storedRecordingTable } from "@/lib/dexie/db.config";
+import { set } from "zod";
+import { TextFade } from "@/components/text-fade";
 interface RecordingStudioProps {
   configData: ConfigDataType;
   utterances: UtteranceType[];
-  onRecordingComplete: (blobs: RecordingDataType[]) => void;
+  onRecordingComplete: () => void;
   langCode: string;
+  startIdx: number;
 }
 
 export default function RecordingStudio({
@@ -27,15 +30,33 @@ export default function RecordingStudio({
   configData,
   onRecordingComplete,
   langCode,
+  startIdx = 0,
 }: RecordingStudioProps) {
+  const params = useParams();
   const wavesurferRef = useRef<HTMLDivElement>(null);
 
-  const [currIdx, setCurrIdx] = useState(0);
+  const [currIdx, setCurrIdx] = useState(startIdx);
   const [isProcessing, setIsProcessing] = useState(false);
   const [alert, setAlert] = useState("Start recording");
   const [similarityIdx, setSimilarityIdx] = useState<number | null>(null);
-  const [recordingData, setRecordingData] = useState<RecordingDataType[]>([]);
+  // const [recordingData, setRecordingData] = useState<RecordingDataType[]>([]);
   const [showResult, setShowResult] = useState(false);
+
+  // useEffect(() => {
+  //   const getProgress = async () => {
+  //     const lastRecord = await storedRecordingTable
+  //       .where({ setId: params.id })
+  //       .reverse()
+  //       .first();
+  //     if (lastRecord) {
+  //       const maxId = lastRecord.idx;
+  //       console.log("maxId", maxId);
+  //       setCurrIdx(maxId + 1);
+  //     }
+  //   };
+
+  //   getProgress();
+  // }, []);
 
   const { wavesurfer } = useWavesurfer({
     container: wavesurferRef,
@@ -67,7 +88,7 @@ export default function RecordingStudio({
 
   const handleNext = () => {
     if (currIdx + 1 === utterances.length) {
-      onRecordingComplete(recordingData);
+      onRecordingComplete();
     } else {
       setShowResult(false);
       setCurrIdx((prev) => (prev < utterances.length - 1 ? prev + 1 : prev));
@@ -109,6 +130,13 @@ export default function RecordingStudio({
       stopRecording();
 
       if (isAssessAccuracy) {
+        setAlert("Analyzing...");
+        setIsProcessing(true);
+
+        setTimeout(() => {
+          setIsProcessing(false);
+          setAlert("Click to re-attempt");
+        }, 3000);
         const SpeechRecognition =
           window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
@@ -118,28 +146,10 @@ export default function RecordingStudio({
           assessSimilarity(text, utterances[currIdx].text);
         };
         recognition.stop();
-      }
-
-      setAlert("Analyzing...");
-      setIsProcessing(true);
-
-      setTimeout(() => {
-        setIsProcessing(false);
+      } else {
         setAlert("Click to re-attempt");
-      }, 3000);
+      }
     }
-  };
-
-  const handleDownload = () => {
-    const zip = new JSZip();
-
-    recordingData.forEach((data) => {
-      zip.file(`${data.idx}.webm`, data.audioBlob);
-    });
-
-    zip.generateAsync({ type: "blob" }).then((content) => {
-      saveAs(content, "recordings.zip");
-    });
   };
 
   const downloadBlob = async (blob: Blob) => {
@@ -169,25 +179,49 @@ export default function RecordingStudio({
   };
 
   // Function to upsert recording data based on idx
-  const upsertRecordingData = (audioBlob: Blob) => {
+  const upsertRecordingData = async (audioBlob: Blob) => {
     const idx = currIdx;
     const utterance = utterances[idx];
-    setRecordingData((prevData) => {
-      const existingIndex = prevData.findIndex((data) => data.idx === idx);
-      if (existingIndex !== -1) {
-        // If data with given idx exists, update it
-        return prevData.map((data, index) =>
-          index === existingIndex ? { ...data, utterance, audioBlob } : data
-        );
-      } else {
-        // If data with given idx doesn't exist, add it
-        return [...prevData, { idx, utterance, audioBlob }];
-      }
-    });
-    toast.info("Recording saved");
-  };
+    // setRecordingData((prevData) => {
+    //   const existingIndex = prevData.findIndex((data) => data.idx === idx);
+    //   if (existingIndex !== -1) {
+    //     // If data with given idx exists, update it
+    //     return prevData.map((data, index) =>
+    //       index === existingIndex ? { ...data, utterance, audioBlob } : data
+    //     );
+    //   } else {
+    //     // If data with given idx doesn't exist, add it
+    //     return [...prevData, { idx, utterance, audioBlob }];
+    //   }
+    // });
 
-  const handleFinish = () => {};
+    const record = {
+      idx: idx,
+      utteranceId: utterance.id,
+      utterance: utterance.text,
+      audioBlob: audioBlob,
+      setId: params.id,
+    };
+
+    try {
+      const existingData = await storedRecordingTable
+        .where({ utteranceId: record.utteranceId, setId: record.setId })
+        .first();
+
+      if (existingData) {
+        await storedRecordingTable.update(existingData.id, record);
+        console.info(`Recording updated with id ${existingData.id}`);
+        toast.info("Recording updated");
+        return;
+      } else {
+        const id = await storedRecordingTable.add(record);
+        console.info(`Recording saved with id ${id}`);
+        toast.info("Recording saved");
+      }
+    } catch (error) {
+      toast.error("Failed to save the recording");
+    }
+  };
 
   useEffect(() => {
     if (!recordingBlob) return;
@@ -217,10 +251,16 @@ export default function RecordingStudio({
           Click the record button and verbalize below sentence.
         </p>
       </div>
-      <div className="space-y-4 mb-16 flex flex-col items-center gap-3">
+      <div className="relative space-y-4 mb-16 flex flex-col items-center gap-3">
         <p className="text-3xl font-bold text-balance text-center">
           {utterances[currIdx].text}
         </p>
+        {/* <div className="relative w-full text-center">
+          <TextFade
+            text={utterances[currIdx].text}
+            className="text-3xl font-bold text-balance text-center"
+          />
+        </div> */}
         <div className="flex flex-col gap-8 items-center">
           {mediaRecorder && (
             <LiveAudioVisualizer
@@ -321,21 +361,21 @@ export default function RecordingStudio({
             </Button>
           )}
 
-          <Button
+          {/* <Button
             onClick={() => {
               onRecordingComplete(recordingData);
             }}
           >
             Finish anyway
-          </Button>
-          <Button
+          </Button> */}
+          {/* <Button
             onClick={() => {
               downloadBlob(recordingData[currIdx].audioBlob);
               // handleDownload()
             }}
           >
             Download
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>

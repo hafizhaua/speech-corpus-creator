@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -46,6 +46,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { encodeAudio, generateAudioName, generateCSVBlob } from "./utils";
 import { AUDIO_FORMATS, LJSPEECH, PIPER, RESET } from "./templates";
+import { Loader2 } from "lucide-react";
 
 export default function ExportForm({
   utterances,
@@ -54,6 +55,7 @@ export default function ExportForm({
   utterances: UtteranceType[];
   audioData: RecordingDataType[];
 }) {
+  const [isProcessing, setIsProcessing] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: RESET,
@@ -62,8 +64,9 @@ export default function ExportForm({
   const formValue = form.watch();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    // console.log(values);
     // return;
+    setIsProcessing(true);
     const csvData: any = [];
     const zip = new JSZip();
     const encodePromises: Promise<void>[] = []; // Array to store promises for encoding audio
@@ -123,6 +126,7 @@ export default function ExportForm({
     const content = await zip.generateAsync({ type: "blob" });
 
     saveAs(content, `${values.fileName}.zip`);
+    setIsProcessing(false);
   }
 
   const sampleRateOption = [
@@ -625,7 +629,12 @@ export default function ExportForm({
             </div>
           </div>
 
-          <Button type="submit" className="mt-8 w-full">
+          <Button
+            type="submit"
+            className="mt-8 w-full transition"
+            disabled={isProcessing}
+          >
+            {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Download
           </Button>
         </form>

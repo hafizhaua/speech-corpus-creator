@@ -66,8 +66,6 @@ export default function ConfigForm({
           setSelectedMicrophone(microphoneList[0].deviceId);
           form.setValue("deviceId", microphoneList[0].deviceId);
         }
-
-        console.log(microphones);
       } catch (error) {
         console.error("Error accessing microphone:", error);
       }
@@ -98,7 +96,6 @@ export default function ConfigForm({
   ];
 
   function handleSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     onSubmit(values);
   }
 
@@ -106,13 +103,10 @@ export default function ConfigForm({
     try {
       const handleSuccess = async (stream) => {
         stream.getTracks().forEach((track) => track.stop());
-        console.log("Microphone access granted");
         const devices = await navigator.mediaDevices.enumerateDevices();
         const microphoneList = devices.filter(
           (device) => device.kind === "audioinput"
         );
-
-        console.log(microphoneList);
         if (microphoneList.length > 0) {
           navigator.mediaDevices.getUserMedia({
             audio: {
