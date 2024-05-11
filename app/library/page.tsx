@@ -1,31 +1,7 @@
 import React from "react";
-
-import { createClient } from "@/lib/supabase/server";
 import { SetList } from "./set-list";
 
-type LanguageType = {
-  id: string;
-  lang_name: string;
-  country_name: string;
-  country_code: string;
-};
-async function getLanguages() {
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from("languages")
-    .select("id, lang_name, country_name, country_code")
-    .returns<LanguageType[]>();
-
-  if (!error) return data;
-
-  return [];
-}
-
 export default async function UtteranceLibrary() {
-  // const data = await getUtterance();
-  const languages = await getLanguages();
-  const selectOptions = [{ id: "all", lang_name: "All" }, ...languages];
   return (
     <div className="px-6 py-10  md:px-10 md:py-12 flex flex-col gap-8 h-screen">
       <div className="">
@@ -34,7 +10,7 @@ export default async function UtteranceLibrary() {
           Browse some utterance sets made by others that you can also use.
         </p>
       </div>
-      <SetList languages={selectOptions} />
+      <SetList />
     </div>
   );
 }
