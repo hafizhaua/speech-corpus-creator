@@ -6,7 +6,7 @@ import { Github } from "lucide-react";
 import React from "react";
 
 export const GithubButton = () => {
-  const getURL = () => {
+  const getCallbackURL = () => {
     let url =
       process?.env?.NEXT_PUBLIC_SITE_URL ?? // Set this to your site URL in production env.
       process?.env?.NEXT_PUBLIC_VERCEL_URL ?? // Automatically set by Vercel.
@@ -15,7 +15,8 @@ export const GithubButton = () => {
     url = url.includes("http") ? url : `https://${url}`;
     // Make sure to include a trailing `/`.
     url = url.charAt(url.length - 1) === "/" ? url : `${url}/`;
-    return url;
+    console.log(url + "auth/callback");
+    return url + "auth/callback";
   };
 
   const loginWithGithub = () => {
@@ -24,7 +25,7 @@ export const GithubButton = () => {
     supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: getURL() + "/auth/callback",
+        redirectTo: getCallbackURL(),
       },
     });
   };

@@ -11,15 +11,15 @@ export default function Page() {
   const [text, setText] = useState("Hello, world!");
   return (
     <NoSSRWrapper>
-      <Framer text={text} />
+      {/* <Framer text={text} />
 
       <Button
         className="absolute left-32 top-24"
         onClick={() => setText((2000 * Math.random()).toString())}
       >
         Show
-      </Button>
-      {/* <SpeechPlayground /> */}
+      </Button> */}
+      <SpeechPlayground />
 
       {/* <Home />
       <MicrophoneList /> */}
