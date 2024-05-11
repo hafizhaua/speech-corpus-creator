@@ -7,6 +7,8 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import Image from "next/image";
+import HeroImage from "@/public/images/hero.webp";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -20,13 +22,28 @@ export default function Home() {
         </p>
       </div>
       <Image
-        src={"/images/hero.png"}
+        src={HeroImage}
         width={400}
         height={400}
+        placeholder="blur"
         alt="a voice talent woman holding microphone and wearing headphone"
       />
-      <p className="text-sm md:text-base">
-        Select or create a utterance set to start
+      <p className="text-sm md:text-base text-muted-foreground">
+        Select,{" "}
+        <Link
+          className="text-primary/80 hover:text-primary transition"
+          href="/create"
+        >
+          create
+        </Link>
+        , or{" "}
+        <Link
+          className="text-primary/80 hover:text-primary transition"
+          href="/library"
+        >
+          browse
+        </Link>{" "}
+        a utterance set to start
       </p>
       {/* <ModeToggle /> */}
     </div>
