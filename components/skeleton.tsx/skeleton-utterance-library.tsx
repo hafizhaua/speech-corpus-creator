@@ -28,7 +28,7 @@ export const SkeletonUtteranceLibrary = async () => {
             {Array(5)
               .fill(0)
               .map((_, i) => {
-                return <Skeleton className="h-10 w-full"></Skeleton>;
+                return <Skeleton key={i} className="h-10 w-full"></Skeleton>;
               })}
           </div>
         </CardContent>
