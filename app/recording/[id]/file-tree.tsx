@@ -32,7 +32,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
     utterances,
     recordedCount,
     formValue.audioPrefix,
-    formValue.audioNamePattern || "asc",
+    formValue.audioNamePattern,
     formValue.audioSuffix,
     formValue.audioFormat || "webm",
     3

@@ -24,6 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Cross, X } from "lucide-react";
 import { getAllRecordingsBySetId } from "@/lib/dexie/stored-recordings";
+import { v4 } from "uuid";
 
 export const Session = ({
   utterances,
@@ -37,17 +38,17 @@ export const Session = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [configData, setConfigData] = useState<ConfigDataType>({});
   const [audioData, setAudioData] = useState<RecordingDataType[]>([]);
-  const [startIdx, setStartIdx] = useState(0);
-  const lastRecordId = useLiveQuery(() =>
+  const [lastRecord, setLastRecord] = useState({ idx: 0, audioBlob: null });
+  const lastData = useLiveQuery(() =>
     storedRecordingTable.where({ setId: params.id }).reverse().first()
-  )?.idx;
+  );
   const [isAlertOpen, setIsAlertOpen] = useState(false);
 
   const handleConfigSubmit = (data: ConfigDataType) => {
     setConfigData(data);
 
-    if (lastRecordId >= 0) {
-      setStartIdx(lastRecordId + 1);
+    if (lastData?.idx >= 0) {
+      setLastRecord({ idx: lastData.idx, audioBlob: lastData.audioBlob });
       setIsAlertOpen(true);
     } else {
       setCurrentStep(2);
@@ -63,6 +64,7 @@ export const Session = ({
         idx: dt.idx,
         utterance: dt.utterance,
         audioBlob: dt.audioBlob,
+        utteranceId: v4(),
       };
     });
     setAudioData(data);
@@ -72,12 +74,14 @@ export const Session = ({
   const handleRestart = async () => {
     try {
       await storedRecordingTable.where({ setId: params.id }).delete();
-      setStartIdx(0);
+      setLastRecord({ idx: 0, audioBlob: null });
       setCurrentStep(2);
     } catch (error) {
       console.error("Error deleting stored recordings: ", error);
     }
   };
+
+  console.log(utterances);
 
   return (
     <div>
@@ -116,7 +120,7 @@ export const Session = ({
               onClick={() => {
                 setIsAlertOpen(false);
 
-                lastRecordId === utterances.length - 1
+                lastRecord.idx === utterances.length - 1
                   ? handleRecordingComplete()
                   : setCurrentStep(2);
               }}
@@ -135,16 +139,14 @@ export const Session = ({
       </AlertDialog>
       {currentStep === 2 && (
         <RecordingStudio
-          startIdx={startIdx}
+          lastRecord={lastRecord}
           langCode={langCode}
           configData={configData}
           utterances={utterances}
           onRecordingComplete={handleRecordingComplete}
         />
       )}
-      {currentStep === 3 && (
-        <ExportForm utterances={utterances} audioData={audioData} />
-      )}
+      {currentStep === 3 && <ExportForm audioData={audioData} />}
     </div>
   );
 };

@@ -18,7 +18,7 @@ import { ViewTransitions } from "next-view-transitions";
 export const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
-  display: "swap",
+  // display: "swap",
 });
 export const metadata: Metadata = {
   title: "Speech Corpus Creator",

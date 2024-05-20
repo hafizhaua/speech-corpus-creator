@@ -17,6 +17,7 @@ export type RecordingDataType = {
   idx: number;
   utterance: UtteranceType;
   audioBlob: Blob;
+  utteranceId: string;
 };
 
 export interface File {

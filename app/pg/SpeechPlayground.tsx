@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 
 const formSchema = z.object({
@@ -64,7 +65,7 @@ const SpeechPlayground: React.FC = () => {
               <FormItem>
                 <FormLabel>Text</FormLabel>
                 <FormControl>
-                  <Input placeholder="Hello, how are you?" {...field} />
+                  <Textarea placeholder="Hello, how are you?" {...field} />
                 </FormControl>
                 <FormDescription>
                   Enter the text that you want to synthesize.

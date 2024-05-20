@@ -49,16 +49,21 @@ import { AUDIO_FORMATS, LJSPEECH, PIPER, RESET } from "./templates";
 import { Loader2 } from "lucide-react";
 
 export default function ExportForm({
-  utterances,
+  // utterances,
   audioData,
 }: {
-  utterances: UtteranceType[];
-  audioData: RecordingDataType[];
+  // utterances: UtteranceType[];
+  audioData: any;
 }) {
+  console.log(audioData);
   const [isProcessing, setIsProcessing] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: RESET,
+  });
+
+  const utterances = audioData.map((data, idx) => {
+    return { id: data.utteranceId, text: data.utterance };
   });
 
   const formValue = form.watch();
@@ -76,18 +81,18 @@ export default function ExportForm({
         values.audioPrefix,
         values.audioSuffix,
         values.audioNamePattern,
-        utterances[idx].id,
-        utterances.length,
+        data.utteranceId,
+        audioData.length,
         idx + 1
       );
 
       if (values.includePath) {
         csvData.push([
           `${values.audioPath}/${fileName}.${values.audioFormat}`,
-          utterances[idx].text,
+          data.utterance,
         ]);
       } else {
-        csvData.push([fileName, utterances[idx].text]);
+        csvData.push([fileName, data.utterance]);
       }
 
       const encodePromise = encodeAudio(

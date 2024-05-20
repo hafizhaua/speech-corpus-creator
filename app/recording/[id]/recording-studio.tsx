@@ -9,20 +9,19 @@ import { useWavesurfer } from "@wavesurfer/react";
 import { stringSimilarity } from "string-similarity-js";
 import { downloadBlob, normalizeSentence } from "./utils";
 import { toast } from "sonner";
-
-import JSZip from "jszip";
-import { saveAs } from "file-saver";
 import { ConfigDataType, RecordingDataType, UtteranceType } from "./types";
 import { useParams } from "next/navigation";
 import { storedRecordingTable } from "@/lib/dexie/db.config";
-import { set } from "zod";
-import { TextFade } from "@/components/text-fade";
+
 interface RecordingStudioProps {
   configData: ConfigDataType;
   utterances: UtteranceType[];
   onRecordingComplete: () => void;
   langCode: string;
-  startIdx: number;
+  lastRecord: {
+    idx: number;
+    audioBlob: Blob | null;
+  } | null;
 }
 
 export default function RecordingStudio({
@@ -30,33 +29,17 @@ export default function RecordingStudio({
   configData,
   onRecordingComplete,
   langCode,
-  startIdx = 0,
+  lastRecord,
 }: RecordingStudioProps) {
   const params = useParams();
   const wavesurferRef = useRef<HTMLDivElement>(null);
 
-  const [currIdx, setCurrIdx] = useState(startIdx);
+  const [currIdx, setCurrIdx] = useState(lastRecord?.idx || 0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [alert, setAlert] = useState("Start recording");
   const [similarityIdx, setSimilarityIdx] = useState<number | null>(null);
-  // const [recordingData, setRecordingData] = useState<RecordingDataType[]>([]);
-  const [showResult, setShowResult] = useState(false);
-
-  // useEffect(() => {
-  //   const getProgress = async () => {
-  //     const lastRecord = await storedRecordingTable
-  //       .where({ setId: params.id })
-  //       .reverse()
-  //       .first();
-  //     if (lastRecord) {
-  //       const maxId = lastRecord.idx;
-  //       console.log("maxId", maxId);
-  //       setCurrIdx(maxId + 1);
-  //     }
-  //   };
-
-  //   getProgress();
-  // }, []);
+  const [showRecording, setShowRecording] = useState(false);
+  const [showAssessment, setShowAssessment] = useState(false);
 
   const { wavesurfer } = useWavesurfer({
     container: wavesurferRef,
@@ -90,13 +73,16 @@ export default function RecordingStudio({
     if (currIdx + 1 === utterances.length) {
       onRecordingComplete();
     } else {
-      setShowResult(false);
+      setShowRecording(false);
+      setShowAssessment(false);
+      setIsProcessing(false);
       setCurrIdx((prev) => (prev < utterances.length - 1 ? prev + 1 : prev));
+      setAlert("Start recording");
     }
   };
 
   const handlePrev = () => {
-    setShowResult(false);
+    setShowRecording(false);
     setCurrIdx((prev) => (prev > 0 ? prev - 1 : prev));
   };
 
@@ -106,7 +92,8 @@ export default function RecordingStudio({
 
   const handleChange = () => {
     if (!isRecording) {
-      setShowResult(false);
+      setShowRecording(false);
+      setShowAssessment(false);
       setSimilarityIdx(0);
       startRecording();
 
@@ -133,10 +120,6 @@ export default function RecordingStudio({
         setAlert("Analyzing...");
         setIsProcessing(true);
 
-        setTimeout(() => {
-          setIsProcessing(false);
-          setAlert("Click to re-attempt");
-        }, 3000);
         const SpeechRecognition =
           window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
@@ -145,25 +128,25 @@ export default function RecordingStudio({
           const text = event?.results[0][0].transcript;
           assessSimilarity(text, utterances[currIdx].text);
         };
+
+        recognition.abort();
+
+        if (similarityIdx && similarityIdx > 0) {
+          setIsProcessing(false);
+          setShowAssessment(true);
+          setAlert("Click to re-attempt");
+        }
+
+        setTimeout(() => {
+          setIsProcessing(false);
+          setShowAssessment(true);
+          setAlert("Click to re-attempt");
+        }, 1500);
         recognition.stop();
       } else {
         setAlert("Click to re-attempt");
       }
     }
-  };
-
-  const downloadBlob = async (blob: Blob) => {
-    // const encodedBlob = await transcodeWebm(blob, "wav");
-
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.style.display = "none";
-    a.href = url;
-    a.download = `audio.webm`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
   };
 
   const assessSimilarity = (source: string, target: string) => {
@@ -173,8 +156,6 @@ export default function RecordingStudio({
       normalizeSentence(target)
     );
 
-    setIsProcessing(false);
-    setAlert("Click to re-attempt");
     setSimilarityIdx(similarity);
   };
 
@@ -182,18 +163,6 @@ export default function RecordingStudio({
   const upsertRecordingData = async (audioBlob: Blob) => {
     const idx = currIdx;
     const utterance = utterances[idx];
-    // setRecordingData((prevData) => {
-    //   const existingIndex = prevData.findIndex((data) => data.idx === idx);
-    //   if (existingIndex !== -1) {
-    //     // If data with given idx exists, update it
-    //     return prevData.map((data, index) =>
-    //       index === existingIndex ? { ...data, utterance, audioBlob } : data
-    //     );
-    //   } else {
-    //     // If data with given idx doesn't exist, add it
-    //     return [...prevData, { idx, utterance, audioBlob }];
-    //   }
-    // });
 
     const record = {
       idx: idx,
@@ -226,12 +195,24 @@ export default function RecordingStudio({
   useEffect(() => {
     if (!recordingBlob) return;
 
-    setShowResult(true);
+    setShowRecording(true);
     wavesurfer?.loadBlob(recordingBlob);
     // downloadBlob(recordingBlob);
     upsertRecordingData(recordingBlob);
     // recordingBlob will be present at this point after 'stopRecording' has been called
   }, [recordingBlob, wavesurfer]);
+
+  useEffect(() => {
+    if (lastRecord && lastRecord?.audioBlob) {
+      setCurrIdx(lastRecord.idx);
+      setAlert("Start recording");
+      setShowRecording(true);
+      if (wavesurfer) {
+        wavesurfer?.loadBlob(lastRecord.audioBlob);
+        console.log("Wavesurfer loaded");
+      } else console.log("No wavesurfer");
+    }
+  }, [wavesurfer]);
 
   return (
     <div className="px-12 py-16 min-h-screen flex flex-col gap-12 items-center">
@@ -271,7 +252,7 @@ export default function RecordingStudio({
               barColor="#7f1d1d"
             />
           )}
-          {!showResult && !mediaRecorder && (
+          {!showRecording && !mediaRecorder && (
             <div className="w-[280px] h-[125px] flex justify-center items-center">
               <div
                 className={`border transition w-full ${
@@ -283,7 +264,7 @@ export default function RecordingStudio({
           <div
             ref={wavesurferRef}
             className={`transition overflow-hidden ${
-              recordingBlob && !isRecording && showResult ? "h-fit" : "hidden"
+              showRecording ? "h-fit" : "hidden"
             }`}
             onClick={onPlayPause}
           ></div>
@@ -318,7 +299,7 @@ export default function RecordingStudio({
               {alert}
             </p>
           </div>
-          {isAssessAccuracy && showResult && !isProcessing && (
+          {isAssessAccuracy && showAssessment && !isProcessing && (
             <>
               <div className="border border-muted rounded-lg px-6 py-4 flex gap-4">
                 <div className="space-y-1">
@@ -345,29 +326,32 @@ export default function RecordingStudio({
               </div>
             </>
           )}
-          {showResult && (
-            <Button
-              className="rounded-full space-x-2"
-              variant="outline"
-              onClick={handleNext}
-            >
-              <ArrowRight className="w-4 h-4 animate-pulse" />
-              <span>
-                {" "}
-                {isAssessAccuracy && similarityIdx && similarityIdx < 0.7
-                  ? "Proceed anyway"
-                  : "Go next"}
-              </span>
-            </Button>
-          )}
+          <div className="flex gap-2 items-center">
+            {showRecording && (
+              <Button
+                className="rounded-full space-x-2"
+                variant="outline"
+                onClick={handleNext}
+              >
+                <ArrowRight className="w-4 h-4 animate-pulse" />
+                <span>
+                  {" "}
+                  {isAssessAccuracy && similarityIdx && similarityIdx < 0.7
+                    ? "Proceed anyway"
+                    : "Go next"}
+                </span>
+              </Button>
+            )}
 
-          {/* <Button
-            onClick={() => {
-              onRecordingComplete(recordingData);
-            }}
-          >
-            Finish anyway
-          </Button> */}
+            <Button
+              onClick={() => {
+                onRecordingComplete();
+              }}
+              variant="link"
+            >
+              Finish anyway
+            </Button>
+          </div>
           {/* <Button
             onClick={() => {
               downloadBlob(recordingData[currIdx].audioBlob);

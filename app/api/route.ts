@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const text = searchParams.get("text");
-  console.log("Masuk: ", text);
 
   try {
     const response = await fetch(`http://localhost:5000?text=${text}`);
