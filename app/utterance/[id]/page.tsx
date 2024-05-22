@@ -27,7 +27,7 @@ const getUtteranceSet = async (id: string) => {
   const { data, error } = await supabase
     .from("utterance_sets")
     .select(
-      "id, title, description, languages (lang_name, country_code), utterances, user_id"
+      "id, title, description, languages (lang_name, country_code), utterances, is_visible, user_id"
     )
     .eq("id", id)
     .returns<SetType[]>()
@@ -35,7 +35,12 @@ const getUtteranceSet = async (id: string) => {
 
   const { data: userData, error: userError } = await supabase.auth.getUser();
 
-  if (!error && !userError && userData?.user.id === data?.user_id) return data;
+  if (
+    !error &&
+    !userError &&
+    (userData?.user.id === data?.user_id || data?.is_visible)
+  )
+    return data;
 
   return null;
 };

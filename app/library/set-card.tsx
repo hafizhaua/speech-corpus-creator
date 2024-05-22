@@ -24,7 +24,7 @@ export const SetCard: React.FC<SetCardProps> = ({
   countryCode,
 }) => {
   return (
-    <Link href={"/library/" + id}>
+    <Link href={"/utterance/" + id}>
       <Card className="flex flex-col w-full h-full overflow-x-hidden hover:bg-muted transition">
         <CardHeader>
           <CardTitle className="">
