@@ -175,45 +175,32 @@ export async function generateCSVBlob(
 }
 
 export const encodeAudio = async (
+  ffmpeg: any,
+  idx: number,
   recordingBlob: Blob,
   format: string,
   sampleRate: number,
   sampleSize: number,
   channelCount: number
 ) => {
-  const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
-  const ffmpeg = new FFmpeg();
-  ffmpeg.on("log", ({ message }) => {
-    // console.log(message);
-  });
-  // toBlobURL is used to bypass CORS issue, urls with the same
-  // domain can be used directly.
-  await ffmpeg.load({
-    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
-  });
-  await ffmpeg.writeFile("input.webm", await fetchFile(recordingBlob));
-  // Transcode WebM to WAV
-  // await ffmpeg.exec(["-i", "input.webm", "output.wav"]);
+  // const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+  // const ffmpeg = new FFmpeg();
+  // ffmpeg.on("log", ({ message }) => {
+  //   // console.log(message);
+  // });
+  // // toBlobURL is used to bypass CORS issue, urls with the same
+  // // domain can be used directly.
+  // await ffmpeg.load({
+  //   coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+  //   wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+  // });
+  await ffmpeg.writeFile(`input${idx}.webm`, await fetchFile(recordingBlob));
 
   try {
-    // await ffmpeg.exec([
-    //   "-i",
-    //   "input.webm",
-    //   "-ar",
-    //   "22050",
-    //   "-vn",
-    //   // "-acodec",
-    //   // "pcm_s161e",
-    //   "-b:a",
-    //   "192k",
-    //   "output.wav",
-    // ]);
-
     if (format === "wav") {
       await ffmpeg.exec([
         "-i",
-        "input.webm",
+        `input${idx}.webm`,
         "-f",
         "wav",
         "-acodec",
@@ -225,9 +212,14 @@ export const encodeAudio = async (
         "-vn",
         "-b:a",
         "192k",
-        "output.wav",
+        `output${idx}.wav`,
       ]);
-      const data = (await ffmpeg.readFile("output.wav")) as any;
+      const data = (await ffmpeg.readFile(`output${idx}.wav`)) as any;
+
+      // console.log(data);
+
+      // await ffmpeg.deleteFile("input.webm");
+      // await ffmpeg.terminate();
       return new Blob([data.buffer], { type: "audio/wav" });
     } else if (format === "mp3") {
       await ffmpeg.exec([
@@ -247,6 +239,9 @@ export const encodeAudio = async (
         "output.mp3",
       ]);
       const data = (await ffmpeg.readFile("output.mp3")) as any;
+
+      // await ffmpeg.deleteFile("input.webm");
+      await ffmpeg.terminate();
       return new Blob([data.buffer], { type: "audio/mp3" });
     }
   } catch (error) {

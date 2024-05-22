@@ -57,7 +57,6 @@ export const Session = ({
 
   const handleRecordingComplete = async () => {
     const recordingData = await getAllRecordingsBySetId(params.id as string);
-    console.log("Recording data: ", recordingData);
 
     const data = recordingData.map((dt) => {
       return {
@@ -80,8 +79,6 @@ export const Session = ({
       console.error("Error deleting stored recordings: ", error);
     }
   };
-
-  console.log(utterances);
 
   return (
     <div>

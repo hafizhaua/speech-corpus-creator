@@ -40,6 +40,8 @@ export default function RecordingStudio({
   const [similarityIdx, setSimilarityIdx] = useState<number | null>(null);
   const [showRecording, setShowRecording] = useState(false);
   const [showAssessment, setShowAssessment] = useState(false);
+  const recordBtnRef = useRef<HTMLButtonElement>(null);
+  const nextBtnRef = useRef<HTMLButtonElement>(null);
 
   const { wavesurfer } = useWavesurfer({
     container: wavesurferRef,
@@ -114,6 +116,7 @@ export default function RecordingStudio({
     }
 
     if (isRecording) {
+      console.log("Recording stopped");
       stopRecording();
 
       if (isAssessAccuracy) {
@@ -214,6 +217,31 @@ export default function RecordingStudio({
     }
   }, [wavesurfer]);
 
+  useEffect(() => {
+    // Attach the event listener on component mount
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Clean up the listener on component unmount to prevent memory leaks
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleKeyDown = (event) => {
+    if (event.key === "r") {
+      // Replace with your desired function call
+      if (recordBtnRef?.current) recordBtnRef.current.click();
+    }
+
+    if (event.key === "e") {
+      if (nextBtnRef?.current) nextBtnRef.current.click();
+    }
+
+    if (event.key === " ") {
+      console.log("Play/pause");
+      wavesurferRef?.current?.click();
+      // onPlayPause();
+    }
+  };
+
   return (
     <div className="px-12 py-16 min-h-screen flex flex-col gap-12 items-center">
       <div className="text-muted-foreground space-y-1">
@@ -274,6 +302,7 @@ export default function RecordingStudio({
               className="group"
               onClick={handleChange}
               disabled={isProcessing}
+              ref={recordBtnRef}
             >
               <div
                 className={`grid place-items-center w-24 h-24 rounded-full border-4 transition ${
@@ -332,6 +361,7 @@ export default function RecordingStudio({
                 className="rounded-full space-x-2"
                 variant="outline"
                 onClick={handleNext}
+                ref={nextBtnRef}
               >
                 <ArrowRight className="w-4 h-4 animate-pulse" />
                 <span>

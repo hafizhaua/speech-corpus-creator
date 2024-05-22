@@ -54,6 +54,8 @@ export const TranscriptContent = ({
 
     return items;
   };
+
+  const renderedItems = renderItems();
   return (
     <div className="w-full relative">
       <span className="rounded-md text-xs px-4 py-2 bg-muted text-right text-muted-foreground mb-4">
@@ -61,7 +63,9 @@ export const TranscriptContent = ({
       </span>
       <div className="absolute w-full bg-muted rounded-md rounded-tl-none py-4 px-4 text-xs">
         <code className=" text-ellipsis w-full overflow-hidden">
-          {renderItems()}
+          {renderedItems.map((item, idx) => (
+            <div key={idx}>{item}</div>
+          ))}
         </code>
       </div>
     </div>

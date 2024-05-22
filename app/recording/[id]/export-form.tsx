@@ -47,6 +47,9 @@ import { saveAs } from "file-saver";
 import { encodeAudio, generateAudioName, generateCSVBlob } from "./utils";
 import { AUDIO_FORMATS, LJSPEECH, PIPER, RESET } from "./templates";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { toBlobURL } from "@ffmpeg/util";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
 
 export default function ExportForm({
   // utterances,
@@ -55,8 +58,8 @@ export default function ExportForm({
   // utterances: UtteranceType[];
   audioData: any;
 }) {
-  console.log(audioData);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processedCount, setProcessedCount] = useState(0);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: RESET,
@@ -72,66 +75,96 @@ export default function ExportForm({
     // console.log(values);
     // return;
     setIsProcessing(true);
-    const csvData: any = [];
-    const zip = new JSZip();
-    const encodePromises: Promise<void>[] = []; // Array to store promises for encoding audio
+    try {
+      const csvData: any = [];
+      const zip = new JSZip();
+      const encodePromises: Promise<void>[] = []; // Array to store promises for encoding audio
 
-    audioData?.forEach((data, idx) => {
-      const fileName = generateAudioName(
-        values.audioPrefix,
-        values.audioSuffix,
-        values.audioNamePattern,
-        data.utteranceId,
-        audioData.length,
-        idx + 1
+      const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+      const ffmpeg = new FFmpeg();
+      // ffmpeg.on("log", ({ message }) => {
+      //   // console.log(message);
+      // });
+      // toBlobURL is used to bypass CORS issue, urls with the same
+      // domain can be used directly.
+      await ffmpeg.load({
+        coreURL: await toBlobURL(
+          `${baseURL}/ffmpeg-core.js`,
+          "text/javascript"
+        ),
+        wasmURL: await toBlobURL(
+          `${baseURL}/ffmpeg-core.wasm`,
+          "application/wasm"
+        ),
+      });
+
+      audioData?.forEach((data, idx) => {
+        // if (idx > 5) return;
+        const fileName = generateAudioName(
+          values.audioPrefix,
+          values.audioSuffix,
+          values.audioNamePattern,
+          data.utteranceId,
+          audioData.length,
+          idx + 1
+        );
+
+        if (values.includePath) {
+          csvData.push([
+            `${values.audioPath}/${fileName}.${values.audioFormat}`,
+            data.utterance,
+          ]);
+        } else {
+          csvData.push([fileName, data.utterance]);
+        }
+
+        const encodePromise = encodeAudio(
+          ffmpeg,
+          idx,
+          data.audioBlob,
+          values.audioFormat,
+          values.sampleRate,
+          values.sampleSize,
+          values.channels
+        ).then((encodedAudio) => {
+          zip.file(
+            `${
+              values.audioPath !== "" ? values.audioPath + "/" : ""
+            }${fileName}.${values.audioFormat}`,
+            encodedAudio as Blob
+          );
+          setProcessedCount((prev) => prev + 1);
+        });
+        encodePromises.push(encodePromise); // Store the promise
+      });
+
+      // Wait for all encoding operations to complete
+      await Promise.all(encodePromises);
+
+      const csvBlob = await generateCSVBlob(
+        csvData,
+        values.transcriptionDelimiter
       );
 
-      if (values.includePath) {
-        csvData.push([
-          `${values.audioPath}/${fileName}.${values.audioFormat}`,
-          data.utterance,
-        ]);
-      } else {
-        csvData.push([fileName, data.utterance]);
-      }
-
-      const encodePromise = encodeAudio(
-        data.audioBlob,
-        values.audioFormat,
-        values.sampleRate,
-        values.sampleSize,
-        values.channels
-      ).then((encodedAudio) => {
+      if (csvBlob) {
         zip.file(
           `${
-            values.audioPath !== "" ? values.audioPath + "/" : ""
-          }${fileName}.${values.audioFormat}`,
-          encodedAudio as Blob
+            values.transcriptionPath !== ""
+              ? values.transcriptionPath + "/"
+              : ""
+          }${values.transcriptionName}.csv`,
+          csvBlob
         );
-      });
-      encodePromises.push(encodePromise); // Store the promise
-    });
+      }
+      const content = await zip.generateAsync({ type: "blob" });
 
-    // Wait for all encoding operations to complete
-    await Promise.all(encodePromises);
-
-    const csvBlob = await generateCSVBlob(
-      csvData,
-      values.transcriptionDelimiter
-    );
-
-    if (csvBlob) {
-      zip.file(
-        `${
-          values.transcriptionPath !== "" ? values.transcriptionPath + "/" : ""
-        }${values.transcriptionName}.csv`,
-        csvBlob
-      );
+      saveAs(content, `${values.fileName}.zip`);
+    } catch (error) {
+      console.log(error);
+      toast.error("Error exporting data");
     }
-    const content = await zip.generateAsync({ type: "blob" });
-
-    saveAs(content, `${values.fileName}.zip`);
     setIsProcessing(false);
+    setProcessedCount(0);
   }
 
   const sampleRateOption = [
@@ -641,6 +674,11 @@ export default function ExportForm({
           >
             {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Download
+            {isProcessing && (
+              <span className="ml-2">
+                ({processedCount}/{audioData.length})
+              </span>
+            )}
           </Button>
         </form>
       </Form>
