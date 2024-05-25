@@ -28,8 +28,7 @@ const getUtterances = async (id: string) => {
 
   if (
     !error &&
-    !userError &&
-    (userData?.user.id === data?.user_id || data?.is_visible)
+    ((!userError && userData?.user.id === data?.user_id) || data?.is_visible)
   ) {
     const utterancesString = data?.utterances;
     const utterancesArray = utterancesString.split("|");

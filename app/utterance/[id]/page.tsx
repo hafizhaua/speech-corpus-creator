@@ -37,8 +37,7 @@ const getUtteranceSet = async (id: string) => {
 
   if (
     !error &&
-    !userError &&
-    (userData?.user.id === data?.user_id || data?.is_visible)
+    ((!userError && userData?.user.id === data?.user_id) || data?.is_visible)
   )
     return data;
 
