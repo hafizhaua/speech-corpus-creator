@@ -5,7 +5,6 @@ import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile, toBlobURL } from "@ffmpeg/util";
 import { useEffect, useRef, useState } from "react";
 import { useAudioRecorder } from "react-audio-voice-recorder";
-import { downloadBlob } from "../recording/[id]/utils";
 
 export default function Home() {
   const [loaded, setLoaded] = useState(false);
@@ -15,6 +14,20 @@ export default function Home() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const messageRef = useRef<HTMLParagraphElement | null>(null);
+
+  const downloadBlob = async (blob: Blob): Promise<void> => {
+    const downloadBlob = blob;
+    const fileExt = "webm";
+    const url = URL.createObjectURL(downloadBlob);
+
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = url;
+    a.download = `audio.${fileExt}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
 
   const {
     startRecording,

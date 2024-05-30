@@ -203,7 +203,8 @@ export default function MOSForm() {
                   .
                 </p>
                 <p className="text-primary/75 text-sm md:text-base mt-12">
-                  If you have any questions, don't hesitate to contact me on{" "}
+                  If you have any questions, don&apos;t hesitate to contact me
+                  on{" "}
                   <button
                     className="text-primary hover:underline"
                     onClick={() => {
@@ -244,9 +245,9 @@ export default function MOSForm() {
                 Are you sure you want to go back?
               </AlertDialogTitle>
               <AlertDialogDescription>
-                If you haven't finished and saved your progress of this section,
-                your current scorings for this section might be lost when you go
-                back.
+                If you haven&apos;t finished and saved your progress of this
+                section, your current scorings for this section might be lost
+                when you go back.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

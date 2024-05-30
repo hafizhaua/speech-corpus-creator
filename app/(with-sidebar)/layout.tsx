@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -15,18 +15,19 @@ import { Toaster } from "@/components/ui/sonner";
 import MobileMenu from "@/components/mobile-menu";
 import { ViewTransitions } from "next-view-transitions";
 
-export const fontSans = FontSans({
+const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
   // display: "swap",
 });
+
 export const metadata: Metadata = {
   title: "Speech Corpus Creator",
   description:
     "A eb application that helps user to make their own standard speech corpus by providing recording and audio voice sample management features.",
 };
 
-export default function RootLayout({
+export default function SidebarLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

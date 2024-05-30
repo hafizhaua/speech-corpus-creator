@@ -41,11 +41,11 @@ export function MOSPrereq({
       <div className="space-y-4 mb-4">
         <h1 className="text-2xl font-bold">Speech Utterance Questionnaire</h1>
         <p className="text-muted-foreground">
-          I'm Hafizha Ulinnuha Ahmad, an undergraduate Information Engineering
-          student at Universitas Gadjah Mada, currently conducting research on
-          speech utterance audio sample assessment. If you have a few minutes to
-          spare, I would greatly appreciate it if you could fill out this
-          questionnaire.
+          I&apos;m Hafizha Ulinnuha Ahmad, an undergraduate Information
+          Engineering student at Universitas Gadjah Mada, currently conducting
+          research on speech utterance audio sample assessment. If you have a
+          few minutes to spare, I would greatly appreciate it if you could fill
+          out this questionnaire.
         </p>
         <p className="text-muted-foreground">
           Your data will be used for research purposes only and will be kept
@@ -128,12 +128,12 @@ export function MOSPrereq({
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
-                    I'm willing to participate in this research
+                    I&apos;m willing to participate in this research
                   </FormLabel>
                   <FormDescription>
-                    I'm willing to provide appropriate feedback on the audio
-                    samples provided voluntarily and truthfully without any
-                    coercion or influence from any party.
+                    I&apos;m willing to provide appropriate feedback on the
+                    audio samples provided voluntarily and truthfully without
+                    any coercion or influence from any party.
                   </FormDescription>
                 </div>
               </FormItem>
