@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
-import { Lightbulb, PlusCircle, Upload } from "lucide-react";
+import { Lightbulb, PlusCircle, RotateCcw, Upload } from "lucide-react";
 
 import { Switch } from "@/components/ui/switch";
 import { readFileAsync } from "@/lib/utils";
@@ -49,6 +49,7 @@ import {
   updateUtteranceSet,
 } from "@/lib/actions/utterance-set";
 import { FileTab } from "./file-tab";
+import { Textarea } from "./ui/textarea";
 
 const formSchema = z.object({
   title: z.string().trim().min(1).max(50),
@@ -166,8 +167,6 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
           }
         });
 
-        console.log(texts);
-
         form.setValue("utterances", texts.join("|"));
 
         resetUtteranceSet(texts);
@@ -190,10 +189,27 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
   }, [initialValue, addUtterance, resetUtteranceSet]);
 
   const handleAddRow = () => {
-    if (newUtterance.length > 0 && newUtterance.trim()) {
-      addUtterance(newUtterance);
-      setNewUtterance("");
+    if (newUtterance.length > 0) {
+      const lines = newUtterance.split("\n");
+      const texts = lines.map((line, index) => {
+        // Check if the line has tab-separated id and text
+        const parts = line.split("\t");
+        if (parts.length === 2) {
+          return parts[1].trim();
+        } else {
+          // If no tab-separated id and text, assign id based on line number
+          return line.trim();
+        }
+      });
+
+      texts.map((t) => addUtterance(t));
+
+      // form.setValue("utterances", texts.join("|"));
     }
+  };
+
+  const handleReset = () => {
+    resetUtteranceSet([]);
   };
 
   return (
@@ -267,8 +283,8 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
                 <Lightbulb className="h-4 w-4" />
                 <AlertTitle className="font-semibold">Tips!</AlertTitle>
                 <AlertDescription className="text-muted-foreground">
-                  You can input the utterances manually or by using a .txt file
-                  consisting utterances separated by newline. See the{" "}
+                  You can input the utterances separated by newline manually or
+                  by using a .txt file. See the{" "}
                   <Dialog>
                     <DialogTrigger asChild>
                       <span className="text-primary">example</span>
@@ -301,24 +317,33 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
                       Add row
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
+                  <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
                       <DialogTitle>
-                        Insert a new utterance to the set
+                        Insert new utterance(s) to the set
                       </DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
-                      <div className="flex gap-4">
+                      <div className="flex flex-col gap-4">
                         {/* <Label htmlFor="utterance" className="text-left">
                         Utterance
                       </Label> */}
-                        <Input
+                        {/* <Input
                           id="utterance"
                           value={newUtterance}
                           onChange={(e) => setNewUtterance(e.target.value)}
                           onKeyDown={handleKeyDown}
                           placeholder="I'm cooking a fried rice."
                           className="col-span-3"
+                        /> */}
+
+                        <Textarea
+                          id="utterance"
+                          value={newUtterance}
+                          onChange={(e) => setNewUtterance(e.target.value)}
+                          // onKeyDown={handleKeyDown}
+                          placeholder="I'm cooking a fried rice."
+                          className="col-span-3 h-60"
                         />
 
                         <DialogClose asChild>
@@ -336,7 +361,7 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
                     htmlFor="txt"
                     className="w-full h-full cursor-pointer flex gap-2 justify-center items-center text-sm"
                   >
-                    <Upload className="w-4 h-4" />
+                    <Upload className="font-light w-4 h-4 text-muted-foreground" />
                     Upload .txt file
                   </label>
                   <input
@@ -346,6 +371,10 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
                     onChange={handleFileChange}
                     className="hidden"
                   />
+                </Button>
+                <Button variant="outline" type="button" onClick={handleReset}>
+                  <RotateCcw className="font-light mr-2 w-4 h-4 text-muted-foreground" />
+                  Reset All
                 </Button>
               </div>
 

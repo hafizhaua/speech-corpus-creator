@@ -36,7 +36,7 @@ export default function RecordingStudio({
 
   const [currIdx, setCurrIdx] = useState(lastRecord?.idx || 0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [alert, setAlert] = useState("Start recording");
+  const [alert, setAlert] = useState("Start recording (R)");
   const [similarityIdx, setSimilarityIdx] = useState<number | null>(null);
   const [showRecording, setShowRecording] = useState(false);
   const [showAssessment, setShowAssessment] = useState(false);
@@ -79,7 +79,7 @@ export default function RecordingStudio({
       setShowAssessment(false);
       setIsProcessing(false);
       setCurrIdx((prev) => (prev < utterances.length - 1 ? prev + 1 : prev));
-      setAlert("Start recording");
+      setAlert("Start recording (R)");
     }
   };
 
@@ -112,7 +112,7 @@ export default function RecordingStudio({
         recognition.start();
       }
 
-      setAlert("Listening...");
+      setAlert("Listening... (R)");
     }
 
     if (isRecording) {
@@ -199,6 +199,7 @@ export default function RecordingStudio({
     if (!recordingBlob) return;
 
     setShowRecording(true);
+
     wavesurfer?.loadBlob(recordingBlob);
     // downloadBlob(recordingBlob);
     upsertRecordingData(recordingBlob);
@@ -208,7 +209,7 @@ export default function RecordingStudio({
   useEffect(() => {
     if (lastRecord && lastRecord?.audioBlob) {
       setCurrIdx(lastRecord.idx);
-      setAlert("Start recording");
+      setAlert("Start recording (R)");
       setShowRecording(true);
       if (wavesurfer) {
         wavesurfer?.loadBlob(lastRecord.audioBlob);
@@ -356,7 +357,7 @@ export default function RecordingStudio({
             </>
           )}
           <div className="flex gap-2 items-center">
-            {showRecording && (
+            {showRecording && !isProcessing && (
               <Button
                 className="rounded-full space-x-2"
                 variant="outline"
@@ -367,8 +368,8 @@ export default function RecordingStudio({
                 <span>
                   {" "}
                   {isAssessAccuracy && similarityIdx && similarityIdx < 0.7
-                    ? "Proceed anyway"
-                    : "Go next"}
+                    ? "Proceed anyway (E)"
+                    : "Go next (E)"}
                 </span>
               </Button>
             )}

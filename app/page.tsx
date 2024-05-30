@@ -1,11 +1,3 @@
-import { ModeToggle } from "@/components/mode-toggle";
-import { Sidebar } from "@/components/sidebar";
-import { Button } from "@/components/ui/button";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
 import Image from "next/image";
 import HeroImage from "@/public/images/hero.webp";
 import Link from "next/link";

@@ -280,3 +280,41 @@ export const stringSimilarity = (
 
   return (match * 2) / (str1.length + str2.length - (substringLength - 1) * 2);
 };
+
+const sorensenDiceCoefficient = (
+  str1: string,
+  str2: string,
+  substringLength: number = 2,
+  caseSensitive: boolean = false
+): number => {
+  if (!caseSensitive) {
+    str1 = str1.toLowerCase();
+    str2 = str2.toLowerCase();
+  }
+
+  if (str1.length < substringLength || str2.length < substringLength) return 0;
+
+  const createSubstringMap = (
+    str: string,
+    len: number
+  ): Map<string, number> => {
+    const map = new Map<string, number>();
+    for (let i = 0; i <= str.length - len; i++) {
+      const substr = str.substr(i, len);
+      map.set(substr, (map.get(substr) || 0) + 1);
+    }
+    return map;
+  };
+
+  const map1 = createSubstringMap(str1, substringLength);
+  const map2 = createSubstringMap(str2, substringLength);
+
+  let match = 0;
+  map2.forEach((count, substr) => {
+    if (map1.has(substr)) {
+      match += Math.min(count, map1.get(substr) as number);
+    }
+  });
+
+  return (2 * match) / (str1.length + str2.length - 2 * (substringLength - 1));
+};

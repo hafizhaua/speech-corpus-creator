@@ -1,7 +1,7 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { set, z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   text: z.string(),
@@ -23,6 +24,7 @@ const formSchema = z.object({
 const SpeechPlayground: React.FC = () => {
   const [text, setText] = useState("");
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -33,6 +35,7 @@ const SpeechPlayground: React.FC = () => {
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setAudioBlob(null);
+    setIsLoading(true);
     try {
       const response = await fetch(
         `http://localhost:3000/api?text=${values.text}`
@@ -44,9 +47,12 @@ const SpeechPlayground: React.FC = () => {
 
       const audioBlob = await response.blob();
       setAudioBlob(audioBlob);
+      toast.success("Audio generated successfully");
     } catch (error) {
       console.error(error);
+      toast.error("Failed to generate audio");
     }
+    setIsLoading(false);
   };
 
   return (
@@ -75,8 +81,8 @@ const SpeechPlayground: React.FC = () => {
             )}
           />
 
-          <Button type="submit" className="mt-2 w-full">
-            Submit
+          <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
+            {isLoading ? "Generating..." : "Submit"}
           </Button>
         </form>
       </Form>
