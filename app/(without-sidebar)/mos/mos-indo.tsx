@@ -22,25 +22,16 @@ import { AudioFormSchema as FormSchema } from "./schema";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export function MOSIndo({
+  audios,
   onSubmit,
   onBack,
   initVal,
 }: {
+  audios: { id: number; audio_url: string; transcription: string }[];
   onSubmit: (data: z.infer<typeof FormSchema>) => void;
   onBack: () => void;
   initVal: z.infer<typeof FormSchema> | null;
 }) {
-  const audioFiles = [
-    { url: "/audio/1.wav", label: "Apakah kamu sudah makan siang?" },
-    { url: "/audio/2.wav", label: "Tolong matikan lampu sebelum tidur." },
-    { url: "/audio/3.wav", label: "Pertemuan akan dimulai pukul 9 pagi." },
-    {
-      url: "/audio/4.wav",
-      label: "Aku sangat menyukai pemandangan di pantai ini.",
-    },
-    { url: "/audio/5.wav", label: "Buku ini sangat menarik untuk dibaca" },
-  ];
-
   const fullScales = [
     { value: 1, label: "Bad" },
     { value: 2, label: "Poor" },
@@ -52,21 +43,16 @@ export function MOSIndo({
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: initVal || {
-      audioRatings: audioFiles.map((file) => ({
-        audioName: file.url,
-        // naturalness: 3,
-        // quality: 3,
+      audioRatings: audios.map((file) => ({
+        audioId: file.id,
       })),
     },
   });
 
   function handleSubmit(data: z.infer<typeof FormSchema>) {
-    // console.log(data);
     toast.info("Your data has been saved.");
     onSubmit(data);
   }
-
-  const handleBack = () => {};
 
   return (
     <Form {...form}>
@@ -89,7 +75,7 @@ export function MOSIndo({
         className="w-full space-y-4"
       >
         <div className="space-y-16">
-          {audioFiles.map((audio, index) => {
+          {audios.map((audio, index) => {
             return (
               <div className="space-y-4" key={index}>
                 <div className="w-full text-muted-foreground flex items-center gap-2">
@@ -98,7 +84,10 @@ export function MOSIndo({
                   </p>
                   <div className="border-t border-muted flex-1"></div>
                 </div>
-                <AudioMOS audioUrl={audio.url} label={audio.label} />
+                <AudioMOS
+                  audioUrl={audio.audio_url}
+                  label={audio.transcription}
+                />
                 <div className="w-fit mx-auto text-center flex flex-col gap-8 md:flex-row md:gap-32">
                   <FormField
                     control={form.control}
@@ -185,8 +174,8 @@ export function MOSIndo({
             type="submit"
             className="flex-1 flex gap-2 hover:gap-3 transition-all"
           >
-            <ArrowRight strokeWidth={1} size={16} />
             Save and proceed to next section
+            <ArrowRight strokeWidth={1} size={16} />
           </Button>
         </div>
       </form>

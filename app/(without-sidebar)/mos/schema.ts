@@ -19,7 +19,7 @@ export const PrereqFormSchema = z.object({
 export const AudioFormSchema = z.object({
   audioRatings: z.array(
     z.object({
-      audioName: z.string(),
+      audioId: z.number(),
       naturalness: z.coerce
         .number({ invalid_type_error: "Please fill the score" })
         .min(1)

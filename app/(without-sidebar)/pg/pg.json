@@ -1,0 +1,67 @@
+{
+  "prereqData": {
+    "name": "Hafizha Ahmad",
+    "institution": "Universitas Gadjah Mada",
+    "impairment": true,
+    "headset": true,
+    "participate": true
+  },
+  "indoData": {
+    "audioRatings": [
+      {
+        "audioName": "/audio/1.wav",
+        "naturalness": 4,
+        "quality": 4
+      },
+      {
+        "audioName": "/audio/2.wav",
+        "naturalness": 4,
+        "quality": 4
+      },
+      {
+        "audioName": "/audio/3.wav",
+        "naturalness": 4,
+        "quality": 4
+      },
+      {
+        "audioName": "/audio/4.wav",
+        "naturalness": 4,
+        "quality": 4
+      },
+      {
+        "audioName": "/audio/5.wav",
+        "naturalness": 4,
+        "quality": 4
+      }
+    ]
+  },
+  "englishData": {
+    "audioRatings": [
+      {
+        "audioName": "/audio/1.wav",
+        "naturalness": 3,
+        "quality": 3
+      },
+      {
+        "audioName": "/audio/2.wav",
+        "naturalness": 3,
+        "quality": 3
+      },
+      {
+        "audioName": "/audio/3.wav",
+        "naturalness": 3,
+        "quality": 3
+      },
+      {
+        "audioName": "/audio/4.wav",
+        "naturalness": 3,
+        "quality": 3
+      },
+      {
+        "audioName": "/audio/5.wav",
+        "naturalness": 3,
+        "quality": 3
+      }
+    ]
+  }
+}

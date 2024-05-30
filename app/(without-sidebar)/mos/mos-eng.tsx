@@ -21,25 +21,17 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRef } from "react";
 
 export function MOSEng({
+  audios,
   onSubmit,
   onBack,
   initVal,
 }: {
+  audios: { id: number; audio_url: string; transcription: string }[];
   onSubmit: (data: z.infer<typeof FormSchema>) => void;
   onBack: () => void;
   initVal: z.infer<typeof FormSchema> | null;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const audioFiles = [
-    { url: "/audio/1.wav", label: "Have you had lunch?" },
-    { url: "/audio/2.wav", label: "Please turn off the lights." },
-    { url: "/audio/3.wav", label: "The meeting will start at 9 a.m." },
-    {
-      url: "/audio/4.wav",
-      label: "I really like this beach scenery",
-    },
-    { url: "/audio/5.wav", label: "This book is very interesting to read." },
-  ];
 
   const fullScales = [
     { value: 1, label: "Bad" },
@@ -52,8 +44,8 @@ export function MOSEng({
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: initVal || {
-      audioRatings: audioFiles.map((file) => ({
-        audioName: file.url,
+      audioRatings: audios.map((file) => ({
+        audioId: file.id,
         // naturalness: 3,
         // quality: 3,
       })),
@@ -77,11 +69,10 @@ export function MOSEng({
         <h3 className="text-lg mb-2 font-semibold">Section I: English</h3>
         <p className="text-muted-foreground">
           In this section, you will listen to 20 random audio samples spoken in
-          English language. Please rate each audio sample based on its
-          naturalness and overall quality. You can listen to the audio sample as
-          many times as you want by clicking the waveform before rating it. Once
-          you are satisfied with your rating, please proceed to the next audio
-          sample.
+          English. Please rate each audio sample based on its naturalness and
+          overall quality. You can listen to the audio sample as many times as
+          you want by clicking the waveform before rating it. Once you are
+          satisfied with your rating, please proceed to the next audio sample.
         </p>
       </div>
       <form
@@ -89,7 +80,7 @@ export function MOSEng({
         className="w-full space-y-4"
       >
         <div className="space-y-16">
-          {audioFiles.map((audio, index) => {
+          {audios.map((audio, index) => {
             return (
               <div className="space-y-4" key={index}>
                 <div className="w-full text-muted-foreground flex items-center gap-2">
@@ -98,7 +89,10 @@ export function MOSEng({
                   </p>
                   <div className="border-t border-muted flex-1"></div>
                 </div>
-                <AudioMOS audioUrl={audio.url} label={audio.label} />
+                <AudioMOS
+                  audioUrl={audio.audio_url}
+                  label={audio.transcription}
+                />
                 <div className="w-fit mx-auto text-center flex flex-col gap-8 md:flex-row md:gap-32">
                   <FormField
                     control={form.control}
@@ -185,8 +179,8 @@ export function MOSEng({
             type="submit"
             className="flex-1 flex gap-2 hover:gap-3 transition-all"
           >
-            <ArrowRight strokeWidth={1} size={16} />
             Save and proceed to next section
+            <ArrowRight strokeWidth={1} size={16} />
           </Button>
         </div>
       </form>

@@ -1,0 +1,20 @@
+
+audios:
+- id (PK)               : uuid
+- audioBlob             : blob
+- transcription         : text 
+- type                  : enum["synthesized", "natural"]
+
+respondents:
+- id (PK)               : uuid
+- fullname              : text
+- institution           : text
+- impairment_req        : bool
+- headset_req           : bool
+
+mos_results:
+- id (PK)               : uuid
+- audioId (FK)          : uuid -> audios.id
+- respondent_id (FK)    : uuid -> respondents.id
+- naturalness           : int
+- quality               : int

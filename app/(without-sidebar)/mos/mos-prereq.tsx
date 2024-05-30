@@ -28,7 +28,10 @@ export function MOSPrereq({
 }) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    defaultValues: initVal || {},
+    defaultValues: initVal || {
+      name: "",
+      institution: "",
+    },
   });
 
   function handleSubmit(data: z.infer<typeof FormSchema>) {
@@ -131,9 +134,9 @@ export function MOSPrereq({
                     I&apos;m willing to participate in this research
                   </FormLabel>
                   <FormDescription>
-                    I&apos;m willing to provide appropriate feedback on the
-                    audio samples provided voluntarily and truthfully without
-                    any coercion or influence from any party.
+                    By checking this box, you are willing to provide appropriate
+                    feedback on the audio samples provided voluntarily and
+                    truthfully without any coercion or influence from any party.
                   </FormDescription>
                 </div>
               </FormItem>
