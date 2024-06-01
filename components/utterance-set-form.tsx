@@ -94,6 +94,7 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
     useUtteranceSetStore();
 
   const btnRef = useRef<HTMLButtonElement>(null);
+  const uploadRef = useRef<HTMLInputElement>(null);
 
   const router = useRouter();
 
@@ -176,6 +177,12 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
     }
   };
 
+  const handleUploadReset = () => {
+    if (uploadRef?.current) {
+      uploadRef.current.value = "";
+    }
+  };
+
   useEffect(() => {
     form.setValue("utterances", utteranceSets.map((u) => u.text).join("|"));
   }, [form, utteranceSets]);
@@ -203,6 +210,7 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
       });
 
       texts.map((t) => addUtterance(t));
+      setNewUtterance("");
 
       // form.setValue("utterances", texts.join("|"));
     }
@@ -369,6 +377,8 @@ export const UtteranceSetForm: React.FC<CreateFormProps> = ({
                     type="file"
                     accept=".txt"
                     onChange={handleFileChange}
+                    ref={uploadRef}
+                    onClick={handleUploadReset}
                     className="hidden"
                   />
                 </Button>
