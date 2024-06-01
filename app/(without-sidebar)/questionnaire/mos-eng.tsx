@@ -53,8 +53,6 @@ export function MOSEng({
   });
 
   function handleSubmit(data: z.infer<typeof FormSchema>) {
-    // console.log(data);
-    toast.info("Your data has been saved.");
     onSubmit(data);
   }
 

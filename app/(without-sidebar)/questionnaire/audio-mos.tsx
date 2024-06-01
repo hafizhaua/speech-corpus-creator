@@ -37,7 +37,7 @@ export default function AudioMOS({
         waveColor="#7f1d1d"
         url={audioUrl}
         onReady={onReady}
-        onClick={onPlayPause}
+        onClick={() => wavesurfer?.play()}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
       />

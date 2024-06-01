@@ -50,7 +50,6 @@ export function MOSIndo({
   });
 
   function handleSubmit(data: z.infer<typeof FormSchema>) {
-    toast.info("Your data has been saved.");
     onSubmit(data);
   }
 

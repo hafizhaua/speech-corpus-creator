@@ -31,11 +31,12 @@ export function MOSPrereq({
     defaultValues: initVal || {
       name: "",
       institution: "",
+      email: "",
+      headset: false,
     },
   });
 
   function handleSubmit(data: z.infer<typeof FormSchema>) {
-    toast.info("Your data has been saved.");
     onSubmit(data);
   }
 
@@ -96,6 +97,19 @@ export function MOSPrereq({
               <FormLabel>Full Name</FormLabel>
               <FormControl>
                 <Input placeholder="John Doe" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input placeholder="johndoe@mail.com" type="email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -166,6 +180,29 @@ export function MOSPrereq({
           />
           <FormField
             control={form.control}
+            name="language"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>
+                    I am able to understand both Indonesian and English language
+                  </FormLabel>
+                  <FormDescription>
+                    By checking this box, you ensure that you are able to assess
+                    the audio samples in both Indonesian and English languages.
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
             name="headset"
             render={({ field }) => (
               <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
@@ -176,7 +213,10 @@ export function MOSPrereq({
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>I am wearing an earphone/headset</FormLabel>
+                  <FormLabel>
+                    I am wearing an earphone/headset (optional but highly
+                    recommended)
+                  </FormLabel>
                   <FormDescription>
                     By checking this box, you ensure that you are wearing a
                     wearable hearing device to listen to the audio samples.

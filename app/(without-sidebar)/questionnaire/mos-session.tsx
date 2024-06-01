@@ -52,19 +52,34 @@ export default function MOSSession({
   > | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const onRequirementSubmit = (data: z.infer<typeof PrereqFormSchema>) => {
-    setPrereqData(data);
-    console.log(data);
-    setCurrentStep(2);
+  const onRequirementSubmit = async (
+    data: z.infer<typeof PrereqFormSchema>
+  ) => {
+    const supabase = createClient();
+    const { data: respondentData, error } = await supabase
+      .from("respondents")
+      .select("email")
+      .eq("email", data.email);
+
+    if (respondentData?.length === 0) {
+      setPrereqData(data);
+      toast.info("Your progress has been saved.");
+      // console.log(data);
+      setCurrentStep(2);
+    } else {
+      toast.error("You have already submitted the form before.");
+    }
   };
 
   const onEngSubmit = (data: z.infer<typeof AudioFormSchema>) => {
     setEnglishData(data);
+    toast.info("Your progress has been saved.");
     setCurrentStep(3);
   };
 
   const onIndoSubmit = (data: z.infer<typeof AudioFormSchema>) => {
     setIndoData(data);
+    toast.info("Your progress has been saved.");
     setCurrentStep(4);
   };
 
@@ -78,26 +93,22 @@ export default function MOSSession({
   };
 
   const onSubmit = async () => {
-    console.log("Data submitted", {
-      prereqData,
-      indoData,
-      englishData,
-    });
+    // console.log("Data submitted", {
+    //   prereqData,
+    //   indoData,
+    //   englishData,
+    // });
 
     const supabase = createClient();
-
-    const { data, error } = await supabase.from("respondents").select("*");
-
-    // if (error) console.log(error.message);
-    // else console.log(data);
-    // return;
 
     const { data: respondentData, error: respondentError } = await supabase
       .from("respondents")
       .insert({
         fullname: prereqData?.name as string,
+        email: prereqData?.email as string,
         institution: prereqData?.institution as string,
         req_agreement: prereqData?.participate as boolean,
+        req_language: prereqData?.language as boolean,
         req_impairment: prereqData?.impairment as boolean,
         req_headset: prereqData?.headset as boolean,
       })
@@ -255,7 +266,7 @@ export default function MOSSession({
                   Thank you for participating!
                 </h1>
                 <p className="text-primary/75 text-sm md:text-base">
-                  Your data has been saved. You can close this page now or go{" "}
+                  Your data has been recorded. You can close this page now or go{" "}
                   <button
                     onClick={onReset}
                     className="hover:underline text-primary hover:text-primary/90"
