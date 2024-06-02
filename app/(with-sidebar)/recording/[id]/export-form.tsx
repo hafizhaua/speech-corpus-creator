@@ -60,6 +60,7 @@ export default function ExportForm({
 }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processedCount, setProcessedCount] = useState(0);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: RESET,
@@ -82,11 +83,6 @@ export default function ExportForm({
 
       const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
       const ffmpeg = new FFmpeg();
-      // ffmpeg.on("log", ({ message }) => {
-      //   // console.log(message);
-      // });
-      // toBlobURL is used to bypass CORS issue, urls with the same
-      // domain can be used directly.
       await ffmpeg.load({
         coreURL: await toBlobURL(
           `${baseURL}/ffmpeg-core.js`,
@@ -98,48 +94,66 @@ export default function ExportForm({
         ),
       });
 
-      audioData?.forEach((data, idx) => {
-        // if (idx > 5) return;
-        const fileName = generateAudioName(
-          values.audioPrefix,
-          values.audioSuffix,
-          values.audioNamePattern,
-          data.utteranceId,
-          audioData.length,
-          idx + 1
-        );
+      // Process files in smaller batches
+      const batchSize = 50; // Adjust batch size as needed
+      for (let i = 0; i < audioData.length; i += batchSize) {
+        const batch = audioData.slice(i, i + batchSize);
 
-        if (values.includePath) {
-          csvData.push([
-            `${values.audioPath}/${fileName}.${values.audioFormat}`,
-            data.utterance,
-          ]);
-        } else {
-          csvData.push([fileName, data.utterance]);
+        for (const [idx, data] of batch.entries()) {
+          const fileName = generateAudioName(
+            values.audioPrefix,
+            values.audioSuffix,
+            values.audioNamePattern,
+            data.utteranceId,
+            audioData.length,
+            i + idx + 1
+          );
+
+          if (values.includePath) {
+            csvData.push([
+              `${values.audioPath}/${fileName}.${values.audioFormat}`,
+              data.utterance,
+            ]);
+          } else {
+            csvData.push([fileName, data.utterance]);
+          }
+
+          const encodePromise = encodeAudio(
+            ffmpeg,
+            idx,
+            data.audioBlob,
+            values.audioFormat,
+            values.sampleRate,
+            values.channels
+          ).then((encodedAudio) => {
+            zip.file(
+              `${
+                values.audioPath !== "" ? values.audioPath + "/" : ""
+              }${fileName}.${values.audioFormat}`,
+              encodedAudio as Blob
+            );
+            setProcessedCount((prev) => prev + 1);
+          });
+          encodePromises.push(encodePromise); // Store the promise
         }
 
-        const encodePromise = encodeAudio(
-          ffmpeg,
-          idx,
-          data.audioBlob,
-          values.audioFormat,
-          values.sampleRate,
-          values.sampleSize,
-          values.channels
-        ).then((encodedAudio) => {
-          zip.file(
-            `${
-              values.audioPath !== "" ? values.audioPath + "/" : ""
-            }${fileName}.${values.audioFormat}`,
-            encodedAudio as Blob
-          );
-          setProcessedCount((prev) => prev + 1);
-        });
-        encodePromises.push(encodePromise); // Store the promise
-      });
+        // Wait for the current batch to complete
+        await Promise.all(encodePromises);
+        encodePromises.length = 0; // Clear the array for the next batch
 
-      // Wait for all encoding operations to complete
-      await Promise.all(encodePromises);
+        // Terminate and reload ffmpeg to free memory
+        await ffmpeg.terminate();
+        await ffmpeg.load({
+          coreURL: await toBlobURL(
+            `${baseURL}/ffmpeg-core.js`,
+            "text/javascript"
+          ),
+          wasmURL: await toBlobURL(
+            `${baseURL}/ffmpeg-core.wasm`,
+            "application/wasm"
+          ),
+        });
+      }
 
       const csvBlob = await generateCSVBlob(
         csvData,
@@ -167,25 +181,22 @@ export default function ExportForm({
     setProcessedCount(0);
   }
 
-  const sampleRateOption = [
-    8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000, 88200, 96000,
-  ];
-  const sampleSizeOption = [8, 16, 24, 32];
-
   const handlePresetChange = (format: z.infer<typeof formSchema>) => {
     form.reset(format);
   };
 
-  const handleDownload = () => {
-    const zip = new JSZip();
+  const getFilteredSampleRates = () => {
+    if (formValue.audioFormat === "webm") {
+      return [8000, 16000, 24000, 48000];
+    }
 
-    audioData.forEach((data) => {
-      zip.file(`${data.idx}.webm`, data.audioBlob);
-    });
+    if (formValue.audioFormat === "mp3") {
+      return [8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000];
+    }
 
-    zip.generateAsync({ type: "blob" }).then((content) => {
-      saveAs(content, "recordings.zip");
-    });
+    return [
+      8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000, 88200, 96000,
+    ];
   };
 
   return (
@@ -590,7 +601,7 @@ export default function ExportForm({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {sampleRateOption.map((rate) => {
+                            {getFilteredSampleRates().map((rate) => {
                               return (
                                 <SelectItem key={rate} value={rate.toString()}>
                                   {rate} Hz
@@ -603,36 +614,6 @@ export default function ExportForm({
                       </FormItem>
                     )}
                   />{" "}
-                  <FormField
-                    control={form.control}
-                    name="sampleSize"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Sample Size</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value?.toString()}
-                          defaultValue={field.value?.toString()}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select sample size (bits)" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {sampleSizeOption.map((size) => {
-                              return (
-                                <SelectItem key={size} value={size.toString()}>
-                                  {size} bits
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   <FormField
                     control={form.control}
                     name="channels"

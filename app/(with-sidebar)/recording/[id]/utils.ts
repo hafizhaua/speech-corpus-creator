@@ -180,20 +180,8 @@ export const encodeAudio = async (
   recordingBlob: Blob,
   format: string,
   sampleRate: number,
-  sampleSize: number,
   channelCount: number
 ) => {
-  // const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
-  // const ffmpeg = new FFmpeg();
-  // ffmpeg.on("log", ({ message }) => {
-  //   // console.log(message);
-  // });
-  // // toBlobURL is used to bypass CORS issue, urls with the same
-  // // domain can be used directly.
-  // await ffmpeg.load({
-  //   coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-  //   wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
-  // });
   await ffmpeg.writeFile(`input${idx}.webm`, await fetchFile(recordingBlob));
 
   try {
@@ -215,16 +203,18 @@ export const encodeAudio = async (
         `output${idx}.wav`,
       ]);
       const data = (await ffmpeg.readFile(`output${idx}.wav`)) as any;
+      console.log(data);
 
-      // console.log(data);
-
-      // await ffmpeg.deleteFile("input.webm");
+      // Clean up files to free memory
+      await ffmpeg.deleteFile(`input${idx}.webm`);
+      await ffmpeg.deleteFile(`output${idx}.wav`);
       // await ffmpeg.terminate();
+
       return new Blob([data.buffer], { type: "audio/wav" });
     } else if (format === "mp3") {
       await ffmpeg.exec([
         "-i",
-        "input.webm",
+        `input${idx}.webm`,
         "-f",
         "mp3",
         "-acodec",
@@ -236,13 +226,39 @@ export const encodeAudio = async (
         "-vn",
         "-b:a",
         "192k",
-        "output.mp3",
+        `output${idx}.mp3`,
       ]);
-      const data = (await ffmpeg.readFile("output.mp3")) as any;
+      const data = (await ffmpeg.readFile(`output${idx}.mp3`)) as any;
+      console.log(data);
 
-      // await ffmpeg.deleteFile("input.webm");
-      await ffmpeg.terminate();
+      // Clean up files to free memory
+      await ffmpeg.deleteFile(`input${idx}.webm`);
+      await ffmpeg.deleteFile(`output${idx}.mp3`);
+      // await ffmpeg.terminate();
+
       return new Blob([data.buffer], { type: "audio/mp3" });
+    } else {
+      await ffmpeg.exec([
+        "-i",
+        `input${idx}.webm`,
+        "-c:a",
+        "libopus",
+        "-ac",
+        channelCount.toString(),
+        "-ar",
+        sampleRate.toString(),
+        `output${idx}.webm`,
+      ]);
+      const data = (await ffmpeg.readFile(`output${idx}.webm`)) as any;
+
+      console.log(data);
+
+      // Clean up files to free memory
+      // await ffmpeg.deleteFile(`input${idx}.webm`);
+      // await ffmpeg.deleteFile(`output${idx}.webm`);
+      // await ffmpeg.terminate();
+
+      return new Blob([data.buffer], { type: "audio/webm" });
     }
   } catch (error) {
     console.log(error);

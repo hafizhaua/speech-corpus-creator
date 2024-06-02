@@ -58,7 +58,7 @@ export const formSchema = z.object({
   transcriptionDelimiter: z.string().min(1),
   includePath: z.boolean(),
   sampleRate: z.coerce.number(),
-  sampleSize: z.coerce.number(),
+  // sampleSize: z.coerce.number(),
   channels: z.coerce.number(),
 });
 // export type ExportFormType = {
