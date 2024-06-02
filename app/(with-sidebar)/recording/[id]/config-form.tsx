@@ -20,11 +20,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
+
 import { ConfigDataType } from "./types";
 import { useEffect, useRef, useState } from "react";
-import { useAudioRecorder } from "react-audio-voice-recorder";
 import TestMic from "./test-mic";
+import { Info } from "lucide-react";
 
 const formSchema = z.object({
   features: z.array(z.string()),
@@ -77,19 +84,18 @@ export default function ConfigForm({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      features: [
-        "speechAccuracy",
-        "echoCancellation",
-        "noiseSuppression",
-        "autoGainControl",
-      ],
+      features: [],
     },
   });
 
   const formValue = form.watch();
 
   const featureOption = [
-    { id: "speechAccuracy", label: "Speech Accuracy Assessment" },
+    {
+      id: "speechAccuracy",
+      label: "Speech Accuracy Assessment",
+      info: "By applying this, you agree to send your speech data to external cloud service to assess the request.",
+    },
     { id: "echoCancellation", label: "Echo Cancellation" },
     { id: "noiseSuppression", label: "Noise Suppression" },
     { id: "autoGainControl", label: "Auto Gain Control" },
@@ -174,21 +180,6 @@ export default function ConfigForm({
                       )}
                     </SelectContent>
                   </Select>
-                  {isMicEnabled ? (
-                    <TestMic
-                      microphoneId={formValue.deviceId}
-                      config={formValue}
-                    />
-                  ) : (
-                    <Button
-                      type="button"
-                      className=""
-                      onClick={handleEnableMic}
-                      variant="outline"
-                    >
-                      Enable Microphone
-                    </Button>
-                  )}
                 </div>
                 <FormMessage />
               </FormItem>
@@ -234,8 +225,20 @@ export default function ConfigForm({
                               }}
                             />
                           </FormControl>
-                          <FormLabel className="font-normal">
+                          <FormLabel className="font-normal flex items-center gap-2">
                             {item.label}
+                            {item?.info && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Info strokeWidth={1} size={16} />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{item.info}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
                           </FormLabel>
                         </FormItem>
                       );
@@ -246,9 +249,23 @@ export default function ConfigForm({
               </FormItem>
             )}
           />
-          <Button type="submit" className="mt-2 w-full">
-            Submit
-          </Button>
+          <div className="flex w-full gap-2 items-center">
+            {isMicEnabled ? (
+              <TestMic microphoneId={formValue.deviceId} config={formValue} />
+            ) : (
+              <Button
+                type="button"
+                className=""
+                onClick={handleEnableMic}
+                variant="outline"
+              >
+                Enable Microphone
+              </Button>
+            )}
+            <Button type="submit" className="flex-1">
+              Proceed
+            </Button>
+          </div>
         </form>
       </Form>
     </div>

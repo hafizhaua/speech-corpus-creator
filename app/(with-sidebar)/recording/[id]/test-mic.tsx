@@ -54,17 +54,17 @@ const TestMic = ({
   };
 
   return (
-    <div>
+    <>
       <Button
         type="button"
         variant="outline"
         onClick={startRecording}
         disabled={recording}
       >
-        {recording ? "Listening..." : "Test Microphone"}
+        {recording ? "Listening..." : "Test Microphone & Features"}
       </Button>
       <audio id="hiddenAudio" style={{ display: "none" }} />
-    </div>
+    </>
   );
 };
 
