@@ -203,7 +203,7 @@ export const encodeAudio = async (
         `output${idx}.wav`,
       ]);
       const data = (await ffmpeg.readFile(`output${idx}.wav`)) as any;
-      console.log(data);
+      // console.log(data);
 
       // Clean up files to free memory
       await ffmpeg.deleteFile(`input${idx}.webm`);
@@ -229,7 +229,7 @@ export const encodeAudio = async (
         `output${idx}.mp3`,
       ]);
       const data = (await ffmpeg.readFile(`output${idx}.mp3`)) as any;
-      console.log(data);
+      // console.log(data);
 
       // Clean up files to free memory
       await ffmpeg.deleteFile(`input${idx}.webm`);
@@ -251,7 +251,7 @@ export const encodeAudio = async (
       ]);
       const data = (await ffmpeg.readFile(`output${idx}.webm`)) as any;
 
-      console.log(data);
+      // console.log(data);
 
       // Clean up files to free memory
       // await ffmpeg.deleteFile(`input${idx}.webm`);

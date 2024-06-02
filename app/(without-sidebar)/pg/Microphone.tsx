@@ -43,7 +43,7 @@ function MicrophoneList(): JSX.Element {
 
       // Now you can use the 'stream' for recording
       // For example, you can use it with Web Audio API or other recording libraries
-      console.log("Recording started with microphone:", selectedMicrophone);
+      // console.log("Recording started with microphone:", selectedMicrophone);
     } catch (error) {
       console.error("Error starting recording:", error);
     }

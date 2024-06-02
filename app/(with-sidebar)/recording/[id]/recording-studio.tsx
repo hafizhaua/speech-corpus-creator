@@ -116,7 +116,7 @@ export default function RecordingStudio({
     }
 
     if (isRecording) {
-      console.log("Recording stopped");
+      // console.log("Recording stopped");
       stopRecording();
 
       if (isAssessAccuracy) {
@@ -153,7 +153,7 @@ export default function RecordingStudio({
   };
 
   const assessSimilarity = (source: string, target: string) => {
-    console.log("Assessing...");
+    // console.log("Assessing...");
     const similarity = stringSimilarity(
       normalizeSentence(source),
       normalizeSentence(target)
@@ -213,8 +213,8 @@ export default function RecordingStudio({
       setShowRecording(true);
       if (wavesurfer) {
         wavesurfer?.loadBlob(lastRecord.audioBlob);
-        console.log("Wavesurfer loaded");
-      } else console.log("No wavesurfer");
+        // console.log("Wavesurfer loaded");
+      }
     }
   }, [wavesurfer]);
 
@@ -237,7 +237,6 @@ export default function RecordingStudio({
     }
 
     if (event.key === " ") {
-      console.log("Play/pause");
       wavesurferRef?.current?.click();
       // onPlayPause();
     }
