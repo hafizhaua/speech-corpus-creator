@@ -14,19 +14,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { toast } from "sonner";
-import { useState } from "react";
-import WaveSurfer from "wavesurfer.js";
 import AudioMOS from "./audio-mos";
 import { AudioFormSchema as FormSchema } from "./schema";
 import { ArrowLeft, ArrowRight, Info } from "lucide-react";
-
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export function MOSIndo({
   audios,
@@ -67,7 +57,7 @@ export function MOSIndo({
           Speech Utterance Questionnaire
         </h1>
         <h3 className="text-lg mb-2 font-semibold">Section II: Indonesian</h3>
-        <div className="text-muted-foreground text-sm space-y-2">
+        <div className="text-muted-foreground text-sm md:text-base space-y-2">
           <p className="">
             In this section, you will listen to 30 random audio samples spoken
             in Indonesian language. We will ask you to rate two specific aspects

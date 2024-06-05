@@ -65,7 +65,7 @@ export function MOSEng({
           Speech Utterance Questionnaire
         </h1>
         <h3 className="text-lg mb-2 font-semibold">Section I: English</h3>
-        <div className="text-muted-foreground text-sm space-y-2">
+        <div className="text-muted-foreground text-sm md:text-base space-y-2">
           <p className="">
             In this section, you will listen to 30 random audio samples spoken
             in English. We will ask you to rate two specific aspects of the

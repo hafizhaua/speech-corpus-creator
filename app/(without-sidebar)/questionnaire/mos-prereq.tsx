@@ -67,47 +67,50 @@ export function MOSPrereq({
     <Form {...form}>
       <div className="space-y-4 mb-4">
         <h1 className="text-2xl font-bold">Speech Utterance Questionnaire</h1>
-        <p className="text-muted-foreground">
-          I am Hafizha Ulinnuha Ahmad, an undergraduate Information Engineering
-          student at Universitas Gadjah Mada. I am currently conducting research
-          on the assessment of speech utterance audio samples. Your input is
-          crucial to the success of this study, and I would greatly appreciate
-          it if you could take a few minutes to complete the following
-          questionnaire.
-        </p>
-        <p className="text-muted-foreground">
-          Your data will be used for research purposes only and will be kept
-          confidential. Any questions are welcomed and can be directed to me via{" "}
-          <button
-            className="text-primary hover:underline"
-            onClick={() => {
-              navigator.clipboard.writeText("hafizhaua@gmail.com");
-              toast.info("Email hafizhaua@gmail.com copied to clipboard");
-            }}
-          >
-            Email
-          </button>
-          ,{" "}
-          <a
-            className="text-primary hover:underline"
-            href="https://twitter.com/hafizhaua"
-            rel="noreferrer noopener"
-            target="_blank"
-          >
-            Twitter
-          </a>
-          , or{" "}
-          <a
-            className="text-primary hover:underline"
-            href="https://linkedin.com/in/hafizhaua"
-            rel="noreferrer noopener"
-            target="_blank"
-          >
-            LinkedIn
-          </a>
-          . Thank you for your participation!
-        </p>
-        <p className="text-muted-foreground"></p>
+
+        <div className="text-muted-foreground text-sm md:text-base space-y-2">
+          <p className="">
+            I am Hafizha Ulinnuha Ahmad, an undergraduate Information
+            Engineering student at Universitas Gadjah Mada. I am currently
+            conducting research on the assessment of speech utterance audio
+            samples. Your input is crucial to the success of this study, and I
+            would greatly appreciate it if you could take a few minutes to
+            complete the following questionnaire.
+          </p>
+          <p className="">
+            Your data will be used for research purposes only and will be kept
+            confidential. Any questions are welcomed and can be directed to me
+            via{" "}
+            <button
+              className="text-primary hover:underline"
+              onClick={() => {
+                navigator.clipboard.writeText("hafizhaua@gmail.com");
+                toast.info("Email hafizhaua@gmail.com copied to clipboard");
+              }}
+            >
+              Email
+            </button>
+            ,{" "}
+            <a
+              className="text-primary hover:underline"
+              href="https://twitter.com/hafizhaua"
+              rel="noreferrer noopener"
+              target="_blank"
+            >
+              Twitter
+            </a>
+            , or{" "}
+            <a
+              className="text-primary hover:underline"
+              href="https://linkedin.com/in/hafizhaua"
+              rel="noreferrer noopener"
+              target="_blank"
+            >
+              LinkedIn
+            </a>
+            . Thank you for your participation!
+          </p>
+        </div>
       </div>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
