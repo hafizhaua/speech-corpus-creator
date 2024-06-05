@@ -68,11 +68,12 @@ export function MOSPrereq({
       <div className="space-y-4 mb-4">
         <h1 className="text-2xl font-bold">Speech Utterance Questionnaire</h1>
         <p className="text-muted-foreground">
-          I&apos;m Hafizha Ulinnuha Ahmad, an undergraduate Information
-          Engineering student at Universitas Gadjah Mada, currently conducting
-          research on speech utterance audio sample assessment. If you have a
-          few minutes to spare, I would greatly appreciate it if you could fill
-          out this questionnaire.
+          I am Hafizha Ulinnuha Ahmad, an undergraduate Information Engineering
+          student at Universitas Gadjah Mada. I am currently conducting research
+          on the assessment of speech utterance audio samples. Your input is
+          crucial to the success of this study, and I would greatly appreciate
+          it if you could take a few minutes to complete the following
+          questionnaire.
         </p>
         <p className="text-muted-foreground">
           Your data will be used for research purposes only and will be kept
