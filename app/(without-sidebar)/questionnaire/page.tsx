@@ -29,11 +29,11 @@ function shuffleArray(array) {
 }
 
 export default async function MOSPage() {
-  const naturalIndo = await getAudios("id-ID", "natural", 1);
-  const synthesizedIndo = await getAudios("id-ID", "synthesized", 1);
+  const naturalIndo = await getAudios("id-ID", "natural", 15);
+  const synthesizedIndo = await getAudios("id-ID", "synthesized", 15);
 
-  const naturalEng = await getAudios("en-US", "natural", 1);
-  const synthesizedEng = await getAudios("en-US", "synthesized", 1);
+  const naturalEng = await getAudios("en-US", "natural", 15);
+  const synthesizedEng = await getAudios("en-US", "synthesized", 15);
 
   // const langs = await getLanguages();
 

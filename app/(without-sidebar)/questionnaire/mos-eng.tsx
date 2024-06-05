@@ -68,21 +68,20 @@ export function MOSEng({
         <div className="text-muted-foreground text-sm space-y-2">
           <p className="">
             In this section, you will listen to 30 random audio samples spoken
-            in English. Please rate each audio sample based on its naturalness
-            and overall quality.
+            in English. We will ask you to rate two specific aspects of the
+            audio samples you will listen to:
           </p>
           <ul className="list-disc ml-4 md:ml-8">
             <li>
-              Naturalness refers to how human-like the speech sounds. Consider
-              factors such as the intonation, rhythm, and overall sound quality.
-              A higher score indicates that the speech sounds more like a
-              natural human voice.
+              <span className="font-semibold">Naturalness</span>: refers to how
+              human-like the speech sounds. Consider factors such as the
+              intonation, pronounciation, and rhythm.
             </li>
             <li>
-              Overall quality is a general assessment that includes naturalness,
-              intelligibility, and any other factors that contribute to the
-              perceived quality of the speech. A higher score indicates better
-              overall quality.
+              <span className="font-semibold">Overall quality</span>: refers to
+              your overall impression of the audio sample. Consider all elements
+              that affect the listening experience, including clarity, loudness,
+              background noise, and any distortions.
             </li>
           </ul>
           <p>
