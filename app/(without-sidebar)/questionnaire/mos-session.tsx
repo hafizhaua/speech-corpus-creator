@@ -41,6 +41,7 @@ export default function MOSSession({
 }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [prereqData, setPrereqData] = useState<z.infer<
     typeof PrereqFormSchema
   > | null>(null);
@@ -55,20 +56,9 @@ export default function MOSSession({
   const onRequirementSubmit = async (
     data: z.infer<typeof PrereqFormSchema>
   ) => {
-    const supabase = createClient();
-    const { data: respondentData, error } = await supabase
-      .from("respondents")
-      .select("email")
-      .eq("email", data.email);
-
-    if (respondentData?.length === 0) {
-      setPrereqData(data);
-      toast.info("Your progress has been saved.");
-      // console.log(data);
-      setCurrentStep(2);
-    } else {
-      toast.error("You have already submitted the form before.");
-    }
+    setPrereqData(data);
+    toast.info("Your progress has been saved.");
+    setCurrentStep(2);
   };
 
   const onEngSubmit = (data: z.infer<typeof AudioFormSchema>) => {
@@ -93,11 +83,7 @@ export default function MOSSession({
   };
 
   const onSubmit = async () => {
-    // console.log("Data submitted", {
-    //   prereqData,
-    //   indoData,
-    //   englishData,
-    // });
+    setIsLoading(true);
 
     const supabase = createClient();
 
@@ -107,6 +93,8 @@ export default function MOSSession({
         fullname: prereqData?.name as string,
         email: prereqData?.email as string,
         institution: prereqData?.institution as string,
+        gender: prereqData?.gender as string,
+        age: prereqData?.age as number,
         req_agreement: prereqData?.participate as boolean,
         req_language: prereqData?.language as boolean,
         req_impairment: prereqData?.impairment as boolean,
@@ -146,6 +134,8 @@ export default function MOSSession({
       toast.error("Failed to submit data");
     }
 
+    setIsLoading(false);
+
     // setCurrentStep(5);
   };
 
@@ -163,7 +153,7 @@ export default function MOSSession({
   }, [currentStep]);
 
   return (
-    <div ref={containerRef} className="px-6 py-10  md:px-10 md:py-12 space-y-4">
+    <div ref={containerRef} className="px-4 py-10 md:px-10 md:py-12 space-y-4">
       {/* )} */}
       <div>
         <AnimatePresence mode="wait">
@@ -244,9 +234,10 @@ export default function MOSSession({
                 <Button
                   onClick={onSubmit}
                   className="flex-1 flex gap-2 hover:gap-3 transition-all"
+                  disabled={isLoading}
                 >
                   <Send strokeWidth={1} size={16} />
-                  Submit my answers
+                  {isLoading ? "Submitting..." : "Submit my answers"}
                 </Button>
               </div>
             </motion.div>

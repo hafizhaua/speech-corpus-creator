@@ -1,69 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
 import MOSSession from "./mos-session";
+import { getLanguages } from "@/lib/actions/languages";
 
-const getNaturalIndoAudio = async () => {
+const getAudios = async (lang, type, limit) => {
   const supabase = createClient();
 
   const { data, error } = await supabase
     .from("random_audios")
     .select("id, audio_url, transcription")
-    .eq("type", "natural")
-    .eq("lang_code", "id-ID")
-    .limit(1);
-
-  if (!error) {
-    return data;
-  } else {
-    console.error(error);
-    return [];
-  }
-};
-
-const getSynthesizedIndoAudio = async () => {
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from("random_audios")
-    .select("id, audio_url, transcription")
-    .eq("type", "synthesized")
-    .eq("lang_code", "id-ID")
-    .limit(1);
-
-  if (!error) {
-    return data;
-  } else {
-    console.error(error);
-    return [];
-  }
-};
-
-const getNaturalEngAudio = async () => {
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from("random_audios")
-    .select("id, audio_url, transcription")
-    .eq("type", "natural")
-    .eq("lang_code", "en-US")
-    .limit(1);
-
-  if (!error) {
-    return data;
-  } else {
-    console.error(error);
-    return [];
-  }
-};
-
-const getSynthesizedEngAudio = async () => {
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from("random_audios")
-    .select("id, audio_url, transcription")
-    .eq("type", "synthesized")
-    .eq("lang_code", "en-US")
-    .limit(1);
+    .eq("type", type)
+    .eq("lang_code", lang)
+    .limit(limit);
 
   if (!error) {
     return data;
@@ -82,17 +29,16 @@ function shuffleArray(array) {
 }
 
 export default async function MOSPage() {
-  const naturalIndo = await getNaturalIndoAudio();
-  const synthesizedIndo = await getSynthesizedIndoAudio();
+  const naturalIndo = await getAudios("id-ID", "natural", 1);
+  const synthesizedIndo = await getAudios("id-ID", "synthesized", 1);
 
-  const naturalEng = await getNaturalEngAudio();
-  const synthesizedEng = await getSynthesizedEngAudio();
+  const naturalEng = await getAudios("en-US", "natural", 1);
+  const synthesizedEng = await getAudios("en-US", "synthesized", 1);
+
+  // const langs = await getLanguages();
 
   const indoAudios = shuffleArray([...naturalIndo, ...synthesizedIndo]);
   const engAudios = shuffleArray([...naturalEng, ...synthesizedEng]);
-
-  // console.log("indo:", indoAudios);
-  // console.log("eng:", engAudios);
 
   return <MOSSession indoAudios={indoAudios} engAudios={engAudios} />;
 }

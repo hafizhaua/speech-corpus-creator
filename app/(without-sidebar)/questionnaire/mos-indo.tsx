@@ -19,7 +19,14 @@ import { useState } from "react";
 import WaveSurfer from "wavesurfer.js";
 import AudioMOS from "./audio-mos";
 import { AudioFormSchema as FormSchema } from "./schema";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Info } from "lucide-react";
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function MOSIndo({
   audios,
@@ -60,14 +67,32 @@ export function MOSIndo({
           Speech Utterance Questionnaire
         </h1>
         <h3 className="text-lg mb-2 font-semibold">Section II: Indonesian</h3>
-        <p className="text-muted-foreground">
-          In this section, you will listen to 20 random audio samples spoken in
-          Indonesian language. Please rate each audio sample based on its
-          naturalness and overall quality. You can listen to the audio sample as
-          many times as you want by clicking the waveform before rating it. Once
-          you are satisfied with your rating, please proceed to the next audio
-          sample.
-        </p>
+        <div className="text-muted-foreground text-sm space-y-2">
+          <p className="">
+            In this section, you will listen to 30 random audio samples spoken
+            in Indonesian language. Please rate each audio sample based on its
+            naturalness and overall quality.
+          </p>
+          <ul className="list-disc ml-4 md:ml-8">
+            <li>
+              Naturalness refers to how human-like the speech sounds. Consider
+              factors such as the intonation, rhythm, and overall sound quality.
+              A higher score indicates that the speech sounds more like a
+              natural human voice.
+            </li>
+            <li>
+              Overall quality is a general assessment that includes naturalness,
+              intelligibility, and any other factors that contribute to the
+              perceived quality of the speech. A higher score indicates better
+              overall quality.
+            </li>
+          </ul>
+          <p>
+            You can listen to the audio sample as many times as you want by
+            clicking the waveform before rating it. Once you are satisfied with
+            your rating, please proceed to the next audio sample.
+          </p>
+        </div>
       </div>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
@@ -159,7 +184,7 @@ export function MOSIndo({
             );
           })}
         </div>
-        <div className="pt-8 w-full flex gap-4">
+        <div className="pt-8 w-full flex gap-4 md:flex-row flex-col">
           <Button
             type="button"
             variant="outline"

@@ -6,6 +6,7 @@ import SpeechPlayground from "./SpeechPlayground";
 import { Framer } from "./Framer";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import AudioUploadForm from "./AudioUploadForm";
 
 export default function Page() {
   const [text, setText] = useState("Hello, world!");
@@ -19,7 +20,8 @@ export default function Page() {
       >
         Show
       </Button> */}
-      <SpeechPlayground />
+      <AudioUploadForm />
+      {/* <SpeechPlayground /> */}
 
       {/* <Home />
       <MicrophoneList /> */}

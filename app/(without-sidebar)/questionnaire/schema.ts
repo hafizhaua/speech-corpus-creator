@@ -7,6 +7,16 @@ export const PrereqFormSchema = z.object({
     .string()
     .min(1, { message: "Please enter your email" })
     .email("Please enter a valid email"),
+  age: z.coerce
+    .number()
+    .int()
+    .min(16, { message: "Please enter your age" })
+    .max(120),
+  gender: z.string().min(1, { message: "Please enter your gender" }),
+  // native_lang_code: z
+  //   .string()
+  //   .min(1, { message: "Please enter your native language" })
+  //   .optional(),
   institution: z
     .string()
     .min(1, { message: "Please enter your institution/university name" }),

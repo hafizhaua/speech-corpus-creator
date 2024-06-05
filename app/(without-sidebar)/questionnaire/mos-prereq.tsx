@@ -14,10 +14,19 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PrereqFormSchema as FormSchema } from "./schema";
+import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
 
 export function MOSPrereq({
   initVal,
@@ -36,8 +45,22 @@ export function MOSPrereq({
     },
   });
 
-  function handleSubmit(data: z.infer<typeof FormSchema>) {
-    onSubmit(data);
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function handleSubmit(data: z.infer<typeof FormSchema>) {
+    const supabase = createClient();
+    setIsLoading(true);
+    const { data: respondentData, error } = await supabase
+      .from("respondents")
+      .select("email")
+      .eq("email", data.email);
+
+    setIsLoading(false);
+    if (respondentData?.length === 0) {
+      onSubmit(data);
+    } else {
+      toast.error("You have already submitted the form before.");
+    }
   }
 
   return (
@@ -111,6 +134,49 @@ export function MOSPrereq({
               <FormControl>
                 <Input placeholder="johndoe@mail.com" type="email" {...field} />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="age"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Age</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min="10"
+                  max="120"
+                  placeholder="21"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="gender"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Gender</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value?.toString()}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your gender" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -226,8 +292,8 @@ export function MOSPrereq({
             )}
           />
         </div>
-        <Button type="submit" className="w-full mt-32">
-          Save and proceed to the next section
+        <Button type="submit" className="w-full mt-32" disabled={isLoading}>
+          {isLoading ? "Checking..." : "Save and proceed to the next section"}
         </Button>
       </form>
     </Form>
