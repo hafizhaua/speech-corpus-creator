@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import MOSSession from "./mos-session";
-import { getLanguages } from "@/lib/actions/languages";
 
 const getAudios = async (lang, type, limit) => {
   const supabase = createClient();

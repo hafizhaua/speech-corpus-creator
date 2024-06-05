@@ -153,7 +153,7 @@ export default function MOSSession({
   }, [currentStep]);
 
   return (
-    <div ref={containerRef} className="px-4 py-10 md:px-10 md:py-12 space-y-4">
+    <div ref={containerRef} className="px-2 py-10 md:px-10 md:py-12 space-y-4">
       {/* )} */}
       <div>
         <AnimatePresence mode="wait">
