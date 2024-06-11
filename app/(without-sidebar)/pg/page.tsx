@@ -20,8 +20,8 @@ export default function Page() {
       >
         Show
       </Button> */}
-      <AudioUploadForm />
-      {/* <SpeechPlayground /> */}
+      {/* <AudioUploadForm /> */}
+      <SpeechPlayground />
 
       {/* <Home />
       <MicrophoneList /> */}
