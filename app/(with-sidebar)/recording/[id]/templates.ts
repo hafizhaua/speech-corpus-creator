@@ -34,7 +34,7 @@ export const LJSPEECH = {
   channels: 1,
 };
 
-export const PIPER = {
+export const PIPER_MEDHIGH = {
   fileFormat: "zip",
   fileName: "piper",
   audioPath: "wavs",
@@ -48,6 +48,24 @@ export const PIPER = {
   includePath: false,
   transcriptionDelimiter: "|",
   sampleRate: 22050,
+  sampleSize: 16,
+  channels: 1,
+};
+
+export const PIPER_LOW = {
+  fileFormat: "zip",
+  fileName: "piper",
+  audioPath: "wavs",
+  audioFormat: "wav",
+  audioNamePattern: "asc",
+  audioPrefix: "",
+  audioSuffix: "",
+  transcriptionPath: "",
+  transcriptionName: "metadata",
+  transcriptionFormat: "csv",
+  includePath: false,
+  transcriptionDelimiter: "|",
+  sampleRate: 16000,
   sampleSize: 16,
   channels: 1,
 };

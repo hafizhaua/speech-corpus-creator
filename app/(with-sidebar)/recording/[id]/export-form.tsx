@@ -45,7 +45,13 @@ import { TranscriptContent } from "./transcript-content";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { encodeAudio, generateAudioName, generateBlob } from "./utils";
-import { AUDIO_FORMATS, LJSPEECH, PIPER, RESET } from "./templates";
+import {
+  AUDIO_FORMATS,
+  LJSPEECH,
+  PIPER_MEDHIGH,
+  PIPER_LOW,
+  RESET,
+} from "./templates";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { toBlobURL } from "@ffmpeg/util";
@@ -237,8 +243,15 @@ export default function ExportForm({
                     >
                       LJSpeech
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handlePresetChange(PIPER)}>
-                      Piper TTS
+                    <DropdownMenuItem
+                      onClick={() => handlePresetChange(PIPER_LOW)}
+                    >
+                      Piper TTS Low
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handlePresetChange(PIPER_MEDHIGH)}
+                    >
+                      Piper TTS Medium/High
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
