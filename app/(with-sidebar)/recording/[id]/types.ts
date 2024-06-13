@@ -45,21 +45,33 @@ export interface FileTreeProps {
 
 export const formSchema = z.object({
   preset: z.string().optional(),
-  fileFormat: z.string().min(1),
-  fileName: z.string().min(1),
+  fileFormat: z.string().min(1, { message: "Please select a valid format" }),
+  fileName: z.string().min(1, { message: "Please enter a valid name" }),
   audioPath: z.string(),
-  audioFormat: z.string().min(1),
-  audioNamePattern: z.string().min(1),
+  audioFormat: z.string().min(1, { message: "Please select a valid format" }),
+  audioNamePattern: z
+    .string()
+    .min(1, { message: "Please enter a valid pattern" }),
   audioPrefix: z.string(),
   audioSuffix: z.string(),
   transcriptionPath: z.string(),
-  transcriptionName: z.string().min(1),
-  transcriptionFormat: z.string().min(1),
-  transcriptionDelimiter: z.string().min(1),
+  transcriptionName: z
+    .string()
+    .min(1, { message: "Please enter a valid name" }),
+  transcriptionFormat: z
+    .string()
+    .min(1, { message: "Please select a valid format" }),
+  transcriptionDelimiter: z
+    .string()
+    .min(1, { message: "Please enter a valid delimiter" }),
   includePath: z.boolean(),
-  sampleRate: z.coerce.number(),
-  // sampleSize: z.coerce.number(),
-  channels: z.coerce.number(),
+  sampleRate: z.coerce
+    .number()
+    .refine((v) => v, { message: "Please enter a valid sample rate" }),
+  // sampleSize: z.coerce.number().refine((v) => v),
+  channels: z.coerce.number().refine((v) => v, {
+    message: "Please enter a valid channel number",
+  }),
 });
 // export type ExportFormType = {
 //   fileFormat: string;

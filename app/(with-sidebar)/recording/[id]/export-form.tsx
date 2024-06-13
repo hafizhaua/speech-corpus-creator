@@ -44,7 +44,7 @@ import { TranscriptContent } from "./transcript-content";
 
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { encodeAudio, generateAudioName, generateCSVBlob } from "./utils";
+import { encodeAudio, generateAudioName, generateBlob } from "./utils";
 import { AUDIO_FORMATS, LJSPEECH, PIPER, RESET } from "./templates";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -155,8 +155,9 @@ export default function ExportForm({
         });
       }
 
-      const csvBlob = await generateCSVBlob(
+      const csvBlob = await generateBlob(
         csvData,
+        values.transcriptionFormat,
         values.transcriptionDelimiter
       );
 
@@ -166,7 +167,7 @@ export default function ExportForm({
             values.transcriptionPath !== ""
               ? values.transcriptionPath + "/"
               : ""
-          }${values.transcriptionName}.csv`,
+          }${values.transcriptionName}.${values.transcriptionFormat}`,
           csvBlob
         );
       }

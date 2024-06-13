@@ -158,13 +158,15 @@ export function generateShortId(length) {
   return result;
 }
 
-export async function generateCSVBlob(
+export async function generateBlob(
   data: any[][],
+  format: string = "csv",
   delimiter: string = ","
 ): Promise<Blob> {
   try {
+    console.log(format);
     const csvContent = data.map((row) => row.join(delimiter)).join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const blob = new Blob([csvContent], { type: `text/${format}` });
     return blob;
   } catch (error) {
     throw new Error(
