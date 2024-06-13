@@ -281,9 +281,9 @@ export default function ExportForm({
                           <SelectItem key="zip" value="zip">
                             zip
                           </SelectItem>
-                          <SelectItem key="rar" value="rar">
+                          {/* <SelectItem key="rar" value="rar">
                             rar
-                          </SelectItem>
+                          </SelectItem> */}
                         </SelectContent>
                       </Select>
                       <FormMessage />
