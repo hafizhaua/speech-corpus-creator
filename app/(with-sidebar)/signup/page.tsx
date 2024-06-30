@@ -27,20 +27,31 @@ export default async function LoginPage() {
       <div className="flex flex-col gap-6">
         <form className="flex flex-col gap-4">
           <Label htmlFor="email">Email:</Label>
-          <Input id="email" name="email" type="email" required />
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            required
+            placeholder="johndoe@mail.com"
+          />
           <Label htmlFor="password">Password:</Label>
-          <Input id="password" name="password" type="password" required />
-          <Button formAction={login}>Log in</Button>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            required
+            placeholder="*******"
+          />
+          <Button variant="default" formAction={signup}>
+            Sign up
+          </Button>
           <p className="text-muted-foreground text-sm">
-            Does not have an account? Register{" "}
-            <Link href="/signup" className="text-primary">
+            Already have an account? Login{" "}
+            <Link href="/login" className="text-primary">
               here
             </Link>
             .
           </p>
-          {/* <Button variant="secondary" formAction={signup}>
-            Sign up
-          </Button> */}
         </form>
         <div className="flex items-center gap-8">
           <hr className="flex-1" />
